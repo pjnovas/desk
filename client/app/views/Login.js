@@ -1,9 +1,11 @@
+/**
+ * VIEW: Login Modal
+ * 
+ */
+ 
+var template = require('./templates/login.hbs.js');
 
-var 
-    template = require("./templates/header.hbs.js"),
-    Login = require("./Login");
-
-module.exports = Backbone.Marionette.Layout.extend({
+module.exports = Backbone.Marionette.ItemView.extend({
 
   //--------------------------------------
   //+ PUBLIC PROPERTIES / CONSTANTS
@@ -11,19 +13,13 @@ module.exports = Backbone.Marionette.Layout.extend({
 
   template: template,
 
-  events: {
-    "click #show-login": "showLogin"
-  },
-
   //--------------------------------------
   //+ INHERITED / OVERRIDES
   //--------------------------------------
 
   initialize: function(){
-    if (window.desk.user){
-      this.model = new Backbone.Model(window.desk.user);
-    }
-  },
+    this.model = new Backbone.Model({ providers: window.desk.providers.split(',') });
+  }
 
   //--------------------------------------
   //+ PUBLIC METHODS / GETTERS / SETTERS
@@ -32,10 +28,6 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
   //+ EVENT HANDLERS
   //--------------------------------------
-
-  showLogin: function(){
-    window.desk.app.modals.show(new Login());
-  }
 
   //--------------------------------------
   //+ PRIVATE AND PROTECTED METHODS

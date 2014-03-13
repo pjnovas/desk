@@ -7,7 +7,6 @@ module.exports = Backbone.Marionette.Region.extend({
   el: "#modals-container",
 
   constructor: function(){
-    //_.bindAll(this);
     Backbone.Marionette.Region.prototype.constructor.apply(this, arguments);
     this.on("show", this.showModal, this);
   },
@@ -20,11 +19,11 @@ module.exports = Backbone.Marionette.Region.extend({
 
   showModal: function(view){
     view.on("close", this.hideModal, this);
-    this.$el.modal('show');
+    this.$el.parents('.modal').modal('show');
   },
 
   hideModal: function(){
-    this.$el.modal('hide');
+    this.$el.parents('.modal').modal('hide');
   }
   
 });

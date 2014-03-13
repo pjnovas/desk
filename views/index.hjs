@@ -12,7 +12,31 @@
     <div id="main" class="container"></div>
     <footer></footer>
 
+    <div class="modal fade">
+      <div class="modal-dialog">
+        <div id="modals-container" class="modal-content"></div>
+      </div>
+    </div>
+
     <script src='/js/vendor.js'></script>
+
+    <script>
+      window.desk = { 
+        baseURL: "{{host}}",
+        providers: "{{providers}}"
+      };
+    </script>
+
+    <script>
+      window.desk.user = null;
+    </script>    
+
+    {{#user}}
+    <script>
+      window.desk.user = {{{user}}};
+    </script>
+    {{/user}}
+
     <script src='/js/app.js'></script>
 
   </body>
