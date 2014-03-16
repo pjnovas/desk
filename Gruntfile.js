@@ -125,6 +125,11 @@ module.exports = function(grunt) {
         files: ["<%= paths.app.root %>**/*",
           "!<%= paths.app.root %>views/**/*.hbs.js"],
         tasks: ['default']
+      },
+      test: {
+        files: ["router/api/**/*", "tests/api/**/*",
+          "!<%= paths.app.root %>**/*"],
+        tasks: ['test']
       }
     },
 
@@ -165,7 +170,54 @@ module.exports = function(grunt) {
           }
         }
       }
+    },
+
+
+    express: {
+      options: {
+        // Override defaults here
+      },
+      test: {
+        options: {
+          script: 'app.js',
+          node_env: 'test',
+          port: require('./app.config.test').port
+        }
+      }
+    },
+
+    mochacov: {
+      unit: {
+        options: {
+          reporter: 'spec'
+        }
+      },
+      html: {
+        options: {
+          reporter: 'html-cov',
+          output: 'coverage.html'
+        }
+      },
+      coverage: {
+        options: {
+          reporter: 'mocha-term-cov-reporter',
+          coverage: true
+        }
+      },
+      coveralls: {
+        options: {
+          coveralls: {
+            serviceName: 'travis-ci'
+          }
+        }
+      },
+      options: {
+        files: 'tests/**/*.js',
+        ui: 'bdd',
+        colors: true
+      }
     }
+
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
@@ -175,6 +227,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-express-server');
+  grunt.loadNpmTasks('grunt-mocha-cov');
 
   grunt.registerTask("default", [
     "clean:before", 
@@ -185,6 +239,11 @@ module.exports = function(grunt) {
     "clean:after",
     "copy"
   ]);
+
+  grunt.registerTask("test", ['express:test', 'mochacov:unit']);
+  grunt.registerTask("wtest", ["test", "watch:test"]);
+
+  grunt.registerTask('travis', ['mochacov:unit']);
 
   grunt.registerTask("w", ["default", "watch:local"]);
 };

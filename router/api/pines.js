@@ -127,7 +127,7 @@ var setPins = function(req, res, next){
     .sort( { "created_at" : -1 } )
     .exec(function(err, pins) {
       if(err) return res.send(500);
-      req.pins = pins;
+      req.pins = pins || [];
       next();
     });
 }

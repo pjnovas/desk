@@ -9,16 +9,11 @@ var
   , path = require('path')
   , passport = require('passport')
   , mongoose = require('mongoose')
-  , MongoStore = require('connect-mongo')(express)
-  , config = require('./app.config.json');
-
-mongoose.connect(config.db.url || ('mongodb://' + config.db.host + '/'+ config.db.name));
+  , MongoStore = require('connect-mongo')(express);
 
 var app = express();
 
 // all environments
-app.set('config', config);
-app.set('port', process.env.PORT || config.port);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hjs');
 app.use(express.favicon());
@@ -27,18 +22,29 @@ app.use(express.json());
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 
-app.use(express.cookieParser(app.get('config').session));
+switch(app.get('env')){
+  case "development":
+    app.set('config', require('./app.config.dev')); 
+    app.use(express.errorHandler());
+    break;
+  case "test":
+    app.set('config', require('./app.config.test')); 
+    break;
+}
 
-app.use(express.cookieSession());
+var config = app.get('config');
 
-/*
-//TODO: CHECK WHY THIS DOESN'T WORK
+mongoose.connect(config.db.url || ('mongodb://' + config.db.host + '/'+ config.db.name));
+
+app.set('port', process.env.PORT || config.port);
+
+app.use(express.cookieParser(config.session));
+
 app.use(express.session({
-    secret: app.get('config').session
-  , store: new MongoStore({db: app.get('config').db.name, url: app.get('config').db.url}) 
-  , cookie: { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/', domain: '.' + app.get('config').host }
+    secret: config.session
+  , store: new MongoStore({db: config.db.name, url: config.db.url}) 
+  , cookie: { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/', domain: '.' + config.host }
 }));
-*/
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -48,14 +54,11 @@ app.use(app.router);
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// development only
-if ('development' == app.get('env')) {
-  app.use(express.errorHandler());
-}
 
 require('./models')(app);
 require('./auth')(app);
 require('./router')(app);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

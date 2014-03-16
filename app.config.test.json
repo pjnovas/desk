@@ -1,0 +1,9 @@
+{
+  "db": {
+      "name": "desk_test"
+    , "host": "localhost"
+  } 
+ , "host": "local.host"
+ , "port": 4001
+ , "session": "holywacamole"
+}

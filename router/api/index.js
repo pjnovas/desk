@@ -1,7 +1,7 @@
 
 module.exports = function(app) {
   
-  var root = '/api/';
+  var root = '/api';
 
   require('./pines')(app, root, common);
 
