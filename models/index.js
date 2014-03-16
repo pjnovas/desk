@@ -3,7 +3,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId;
 
-module.exports = function(app) {
+module.exports = function() {
   
   var User = new Schema({
       "provider": { type: String, required: true }

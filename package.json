@@ -44,6 +44,7 @@
     "grunt-mocha-cov": "~0.2.1",
     "mocha-term-cov-reporter": "~0.2.0",
     "grunt-express-server": "~0.4.13",
-    "passport-http": "~0.2.2"
+    "passport-http": "~0.2.2",
+    "underscore": "~1.6.0"
   }
 }

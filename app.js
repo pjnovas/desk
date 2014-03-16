@@ -55,7 +55,7 @@ app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-require('./models')(app);
+require('./models')();
 require('./auth')(app);
 require('./router')(app);
 

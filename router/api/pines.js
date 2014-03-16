@@ -6,7 +6,6 @@
 
 
 var mongoose = require('mongoose');
-
 var Pin = mongoose.model('Pin');
 
 module.exports = function(app, uri, common) {
@@ -14,7 +13,7 @@ module.exports = function(app, uri, common) {
   app.get(uri + '/pins', setQuery, setPins, sendPins);
   app.post(uri + '/pins', common.isAuth, createPin, sendPin);
   
-  app.get(uri + '/pins/:pid', getPin, sendPin);
+  app.get(uri + '/pins/:pid', getPin, isPinOnwer, sendPin);
 
   app.del(uri + '/pins/:pid', common.isAuth, getPin, isPinOnwer, removePin);
   app.put(uri + '/pins/:pid', common.isAuth, getPin, isPinOnwer, updatePin, sendPin);
@@ -33,10 +32,10 @@ var getPin = function(req, res, next){
 
 var isPinOnwer = function(req, res, next){
 
-  var isOwner = req.user.id === req.pin.leader.id;
+  var isOwner = req.user.id == req.pin.owner;
 
-  if (!isLeader) {
-    return res.send(403, "Only the Owner can touch this pin.");
+  if (!isOwner) {
+    return res.send(403, "Only the Owner can view & touch this pin.");
   }
 
   next();
@@ -109,7 +108,9 @@ var removePin = function(req, res){
 var setQuery = function(req, res, next){
   var query = req.query.q || "";
 
-  req.query = {};
+  req.query = {
+    owner: req.user.id
+  };
 
   if (query.length === 0){
     return next();
