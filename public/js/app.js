@@ -166,7 +166,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./templates/footer.hbs.js":18}],9:[function(require,module,exports){
+},{"./templates/footer.hbs.js":17}],9:[function(require,module,exports){
 
 var 
     template = require("./templates/header.hbs.js"),
@@ -211,10 +211,10 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./Login":11,"./templates/header.hbs.js":19}],10:[function(require,module,exports){
+},{"./Login":11,"./templates/header.hbs.js":18}],10:[function(require,module,exports){
 
 var 
-    template = require("./templates/content.hbs.js")
+    template = require("./templates/layout.hbs.js")
   , Pin = require("../models/Pin")
   , Pins = require("../models/Pins")
   , SearchPinsView = require("./SearchPins")
@@ -281,7 +281,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"../models/Pin":6,"../models/Pins":7,"./PinEdit":14,"./Pins":15,"./SearchPins":16,"./templates/content.hbs.js":17}],11:[function(require,module,exports){
+},{"../models/Pin":6,"../models/Pins":7,"./PinEdit":14,"./Pins":15,"./SearchPins":16,"./templates/layout.hbs.js":19}],11:[function(require,module,exports){
 /**
  * VIEW: Login Modal
  * 
@@ -366,9 +366,29 @@ module.exports = Backbone.Marionette.ItemView.extend({
   tagName: "li",
   template: template,
 
+  ui: {
+    controls: ".controls",
+    copyCtn: "#copy-ctn",
+    text: "#txtText"
+  },
+
+  events: {
+    "click .controls": "hideControls",
+
+    "click .copy": "copyToClipboard",
+    "blur #copy-ctn": "exitCopyClipboard",
+
+    "click .edit": "showEditMode",
+    "click .remove": "removePin"
+  },
+
   //--------------------------------------
   //+ INHERITED / OVERRIDES
   //--------------------------------------
+
+  onRender: function(){
+    this.$el.on("click", this.showControls.bind(this));
+  },
 
   //--------------------------------------
   //+ PUBLIC METHODS / GETTERS / SETTERS
@@ -377,6 +397,41 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
   //+ EVENT HANDLERS
   //--------------------------------------
+
+  showControls: function(e){
+    this.ui.controls.removeClass("hide");
+    e.stopPropagation();
+  },
+
+  hideControls: function(e){
+    this.ui.controls.addClass("hide");
+    e.stopPropagation();
+  },
+
+  copyToClipboard: function(e){
+    this.ui.copyCtn.removeClass("hide").select();
+    this.ui.text.addClass("hide");
+    this.hideControls(e);
+    e.stopPropagation();
+  },
+
+  exitCopyClipboard: function(){
+    this.ui.copyCtn.addClass("hide");
+    this.ui.text.removeClass("hide");
+  },
+
+  showEditMode: function(e){
+    
+    e.stopPropagation();
+  },
+
+  removePin: function(e){
+    if (window.confirm("Is going to be deleted, sure?")){
+      this.model.destroy();
+    }
+
+    e.stopPropagation();
+  }
 
   //--------------------------------------
   //+ PRIVATE AND PROTECTED METHODS
@@ -417,6 +472,10 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
   //+ PUBLIC METHODS / GETTERS / SETTERS
   //--------------------------------------
+
+  onRender: function(){
+    this.ui.tags.tagsinput();
+  },
 
   //--------------------------------------
   //+ EVENT HANDLERS
@@ -516,17 +575,6 @@ module.exports = Backbone.Marionette.ItemView.extend({
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  
-
-
-  return "<div>\n  <div class=\"row search-pins-ctn\">\n    <div class=\"row\">\n      <div class=\"col-xs-12 search-pins\">\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-md-12 new-pin\"></div>\n  </div>\n  <div class=\"row\">\n    <div id=\"pins\" class=\"col-md-12\"></div>\n  </div>\n</div>";
-  })
-;
-
-},{}],18:[function(require,module,exports){
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   var buffer = "";
 
 
@@ -534,7 +582,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -569,6 +617,17 @@ function program3(depth0,data) {
   if(stack1 || stack1 === 0) { buffer += stack1; }
   buffer += "\n    </div>\n  </div>\n</div>";
   return buffer;
+  })
+;
+
+},{}],19:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<div class=\"row\">\n  <div class=\"col-md-12 new-pin\"></div>\n</div>\n<div class=\"row search-pins-ctn\">\n  <div class=\"row\">\n    <div class=\"col-xs-12 search-pins\"></div>\n  </div>\n</div>\n<div class=\"row\">\n  <div id=\"pins\" class=\"col-md-12\"></div>\n</div>\n";
   })
 ;
 
@@ -609,21 +668,26 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 function program1(depth0,data) {
   
   var buffer = "", stack1;
-  buffer += "\n<div class=\"controls\">\n  <a class=\"acn-btn\" href=\"";
+  buffer += "\n  <a class=\"acn-btn\" href=\"";
   if (stack1 = helpers.link) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.link; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "\" target=\"_blank\">\n    <i class=\"fa fa-external-link\"></i>\n  </a>\n</div>\n";
+    + "\" target=\"_blank\">\n    <i class=\"fa fa-external-link\"></i>\n  </a>\n  ";
   return buffer;
   }
 
-  stack1 = helpers['if'].call(depth0, depth0.link, {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n<p class=\"text\">\n  ";
+  buffer += "<p id=\"txtText\" class=\"text\">";
   if (stack1 = helpers.text) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.text; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "\n</p>";
+    + "</p>\n<textarea id=\"copy-ctn\" class=\"text hide\">";
+  if (stack1 = helpers.text) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.text; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "</textarea>\n<div class=\"controls hide\">\n  <a class=\"acn-btn copy\">\n    <i class=\"fa fa-clipboard\"></i>\n  </a>\n  ";
+  stack1 = helpers['if'].call(depth0, depth0.link, {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n  <a class=\"acn-btn edit\">\n    <i class=\"fa fa-edit\"></i>\n  </a>\n  <a class=\"acn-btn remove\">\n    <i class=\"fa fa-times\"></i>\n  </a>\n</div>";
   return buffer;
   })
 ;
@@ -635,15 +699,15 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression;
 
 
-  buffer += "\n<div class=\"row\">\n  <div class=\"col-xs-12 separator-line\">  \n    <textarea id=\"txt-text\" class=\"form-control\">";
+  buffer += "\n<div class=\"row\">\n  <div class=\"col-xs-12 separator-line\">  \n    <textarea id=\"txt-text\" class=\"form-control\" placeholder=\"type something to save\">";
   if (stack1 = helpers.text) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.text; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "</textarea>\n  </div>\n</div>\n\n<div class=\"row\">\n\n  <div class=\"col-xs-5\">\n    <div class=\"input-group\">\n      <span class=\"input-group-addon\">\n        <i class=\"fa fa-tags\"></i>  \n      </span>\n      <input id=\"txt-tags\" type=\"text\" class=\"form-control\" placeholder=\"tags\" value=\"";
+    + "</textarea>\n  </div>\n</div>\n\n<div class=\"row\" style=\"margin-bottom: 5px;\">\n  <div class=\"col-xs-12\">\n    <div class=\"input-group\">\n      <span class=\"input-group-addon\">\n        <i class=\"fa fa-tags\"></i>  \n      </span>\n\n      <input id=\"txt-tags\" type=\"text\" class=\"form-control\" data-role=\"tagsinput\" \n        placeholder=\"type a tag and press enter\" value=\"";
   if (stack1 = helpers.tags) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.tags; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "\">\n    </div>\n  </div>\n\n  <div class=\"col-xs-5\">\n    <div class=\"input-group\">\n      <span class=\"input-group-addon\">\n        <i class=\"fa fa-link\"></i>  \n      </span>\n      <input id=\"txt-link\" type=\"text\" class=\"form-control\" placeholder=\"link\" value=\"";
+    + "\">\n    </div>\n  </div>\n</div>\n\n<div class=\"row\">\n\n  <div class=\"col-xs-10\">\n    <div class=\"input-group\">\n      <span class=\"input-group-addon\">\n        <i class=\"fa fa-link\"></i>  \n      </span>\n      <input id=\"txt-link\" type=\"text\" class=\"form-control pretty\" \n      placeholder=\"paste some link\" value=\"";
   if (stack1 = helpers.link) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.link; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)

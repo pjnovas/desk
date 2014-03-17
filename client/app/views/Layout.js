@@ -1,6 +1,6 @@
 
 var 
-    template = require("./templates/content.hbs.js")
+    template = require("./templates/layout.hbs.js")
   , Pin = require("../models/Pin")
   , Pins = require("../models/Pins")
   , SearchPinsView = require("./SearchPins")

@@ -32,6 +32,10 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //+ PUBLIC METHODS / GETTERS / SETTERS
   //--------------------------------------
 
+  onRender: function(){
+    this.ui.tags.tagsinput();
+  },
+
   //--------------------------------------
   //+ EVENT HANDLERS
   //--------------------------------------

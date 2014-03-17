@@ -165,7 +165,7 @@ module.exports = function(grunt) {
             ,console: true
             ,moment: true
             ,Placeholders: true
-
+            ,Mousetrap: true
             ,desk: true
           }
         }
