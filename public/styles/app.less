@@ -1,8 +1,138 @@
 body {
-  padding: 50px;
+  padding: 55px 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
   color: #00B7FF;
+}
+
+
+
+/*** PINS ***/
+.pin {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 10px 15px;
+  border: 2px solid #AEE285;
+  border-radius: 6px;
+  background-color: #EAFFE0;
+
+  input,
+  textarea {
+    width: 100%;
+    background-color: #FCFFFA;
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.1) inset;
+    border-radius: 3px;
+    padding: 10px;
+    border: 1px solid #ACF8A2;
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: none !important;
+    border: 1px solid #72DA65;
+  }
+
+  textarea {
+    height: 50px;
+  }
+
+  .input-group-addon {
+    color: #269212;
+    background-color: #DBFFC3;
+    border-color: #ACF8A2;
+  }
+
+  .separator-line {
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    border-bottom: 2px dashed rgb(170, 236, 170);
+  }
+}
+
+.acn-btn {
+  color: black;
+  border: 1px solid black;
+  padding: 2px 5px;
+  display: inline-block;
+  font-size: 25px;
+  border-radius: 4px;
+
+  color: #269212;
+  background-color: #DBFFC3;
+  border-color: #ACF8A2;
+  cursor: pointer;
+}
+
+.search-pins-ctn {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 10px 15px;
+
+  input,
+  textarea {
+    width: 100%;
+    border: 1px solid #DEE285;
+    background-color: #FDFFE0;
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.1) inset;
+    border-radius: 3px;
+    padding: 10px;
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: none !important;
+    border: 1px solid #72DA65;
+  }
+}
+
+.pins {
+  list-style: none;
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 0;
+
+  li {
+    width: 100%;
+    border: 2px solid #DEE285;
+    background-color: #FDFFE0;
+    border-radius: 6px;
+    height: auto;
+    height: 100%;
+    min-height: 35px;
+    margin: 10px 0;
+    position: relative;
+
+    .controls {
+      float: right;
+      width: 50px;
+      text-align: center;
+      border-left: 2px dashed #DEE285;
+      height: auto;
+      height: 100%;
+      position: absolute;
+      right: 0;
+      top: 0;
+
+      a {
+        font-size: 16px;
+        margin: 2px 0;
+
+        color: #DEE285;
+        background-color: #FDFFE0;
+        border-color: #DEE285;
+      }
+    }
+
+    .text {
+      width: 100%;
+      margin: 5px;
+    }
+
+  }
+
 }
