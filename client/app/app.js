@@ -25,8 +25,11 @@ module.exports = function(){
 
   app.addInitializer(function(){
     app.header.show(new Header());
-    app.main.show(new Layout());
-    app.footer.show(new Footer());
+
+    if (window.desk.user){
+      app.main.show(new Layout());
+      app.footer.show(new Footer());
+    }
   });
 
   window.desk.app = app;

@@ -49,8 +49,11 @@ module.exports = function(){
 
   app.addInitializer(function(){
     app.header.show(new Header());
-    app.main.show(new Layout());
-    app.footer.show(new Footer());
+
+    if (window.desk.user){
+      app.main.show(new Layout());
+      app.footer.show(new Footer());
+    }
   });
 
   window.desk.app = app;
@@ -702,7 +705,7 @@ function program3(depth0,data) {
   return "\n      <form class=\"navbar-form navbar-right\">\n        <button id=\"show-login\" type=\"button\" class=\"btn btn-success\">Sign in</button>\n      </form>\n      ";
   }
 
-  buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <a class=\"navbar-brand\" href=\"#\">Desk</a>\n    </div>\n    <div class=\"navbar-collapse collapse\">\n      ";
+  buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <label class=\"navbar-brand\">Desk</label>\n    </div>\n    <div class=\"navbar-collapse collapse\">\n      ";
   options = {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data};
   if (stack1 = helpers.isLoggedIn) { stack1 = stack1.call(depth0, options); }
   else { stack1 = depth0.isLoggedIn; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
