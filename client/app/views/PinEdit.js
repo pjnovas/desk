@@ -21,7 +21,14 @@ module.exports = Backbone.Marionette.ItemView.extend({
   },
 
   events:{
-    "click .save-pin": "savePin"
+    "click .save-pin": "savePin",
+    "click .cancel-pin": "cancelPin"
+  },
+
+  templateHelpers: {
+    isNew: function(){
+      return this._id ? false : true;
+    }
   },
 
   //--------------------------------------
@@ -54,6 +61,10 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
   pinSaved: function(){
     this.trigger("saved");
+  },
+
+  cancelPin: function(){
+    this.trigger("cancel");
   }
 
   //--------------------------------------

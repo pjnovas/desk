@@ -3,7 +3,7 @@
  * 
  */
 
-var Pin = require('./Pin');
+var PinLayout = require('./PinLayout');
 
 module.exports = Backbone.Marionette.CollectionView.extend({
 
@@ -13,7 +13,7 @@ module.exports = Backbone.Marionette.CollectionView.extend({
 
   className: "pins",
   tagName: "ul",
-  itemView: Pin,
+  itemView: PinLayout,
 
   //--------------------------------------
   //+ INHERITED / OVERRIDES

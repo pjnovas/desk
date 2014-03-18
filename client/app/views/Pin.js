@@ -11,7 +11,6 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //+ PUBLIC PROPERTIES / CONSTANTS
   //--------------------------------------
 
-  tagName: "li",
   template: template,
 
   ui: {
@@ -21,9 +20,6 @@ module.exports = Backbone.Marionette.ItemView.extend({
   },
 
   events: {
-    "click .controls": "hideControls",
-
-    "click .copy": "copyToClipboard",
     "blur #copy-ctn": "exitCopyClipboard",
 
     "click .edit": "showEditMode",
@@ -35,7 +31,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
   onRender: function(){
-    this.$el.on("click", this.showControls.bind(this));
+    this.$el.on("click", this.copyToClipboard.bind(this));
   },
 
   //--------------------------------------
@@ -46,20 +42,10 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //+ EVENT HANDLERS
   //--------------------------------------
 
-  showControls: function(e){
-    this.ui.controls.removeClass("hide");
-    e.stopPropagation();
-  },
-
-  hideControls: function(e){
-    this.ui.controls.addClass("hide");
-    e.stopPropagation();
-  },
-
   copyToClipboard: function(e){
-    this.ui.copyCtn.removeClass("hide").select();
+    var h = this.$el.height() - this.ui.controls.height() - 7;
     this.ui.text.addClass("hide");
-    this.hideControls(e);
+    this.ui.copyCtn.removeClass("hide").css('height', h).select();
     e.stopPropagation();
   },
 
@@ -69,7 +55,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   },
 
   showEditMode: function(e){
-    
+    this.trigger('edit');
     e.stopPropagation();
   },
 

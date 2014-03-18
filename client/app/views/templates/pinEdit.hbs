@@ -1,6 +1,6 @@
 
 <div class="row">
-  <div class="col-xs-12 separator-line">  
+  <div class="col-xs-12" style="margin-bottom: 5px;">
     <textarea id="txt-text" class="form-control" placeholder="type something to save">{{text}}</textarea>
   </div>
 </div>
@@ -20,7 +20,7 @@
 
 <div class="row">
 
-  <div class="col-xs-10">
+  <div class="col-md-9 col-sm-12">
     <div class="input-group">
       <span class="input-group-addon">
         <i class="fa fa-link"></i>  
@@ -30,9 +30,20 @@
     </div>
   </div>
 
-  <div class="col-xs-2">
-    <a class="acn-btn save-pin">
-      <i class="fa fa-save"></i>
+  {{#if isNew}}
+  <div class="col-md-3 col-sm-12">
+    <a class="acn-btn btn success save-pin">
+      <i class="fa fa-plus"></i>
     </a>
   </div>
+  {{else}}
+  <div class="col-md-3 col-sm-12">
+    <a class="acn-btn btn success save-pin">
+      <i class="fa fa-check"></i>
+    </a>
+    <a class="acn-btn btn danger cancel-pin">
+      <i class="fa fa-times"></i>
+    </a>
+  </div>
+  {{/if}}
 </div>

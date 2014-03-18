@@ -1,18 +1,15 @@
 <p id="txtText" class="text">{{text}}</p>
 <textarea id="copy-ctn" class="text hide">{{text}}</textarea>
-<div class="controls hide">
-  <a class="acn-btn copy">
-    <i class="fa fa-clipboard"></i>
-  </a>
+<div class="controls">
   {{#if link}}
-  <a class="acn-btn" href="{{link}}" target="_blank">
-    <i class="fa fa-external-link"></i>
+  <a class="acn-btn link" href="{{link}}" target="_blank">
+    link
   </a>
   {{/if}}
-  <a class="acn-btn edit">
-    <i class="fa fa-edit"></i>
-  </a>
   <a class="acn-btn remove">
-    <i class="fa fa-times"></i>
+    remove
+  </a>
+  <a class="acn-btn edit">
+    edit
   </a>
 </div>
