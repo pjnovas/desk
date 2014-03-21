@@ -9,7 +9,7 @@ var
   , path = require('path')
   , passport = require('passport')
   , mongoose = require('mongoose')
-  , MongoStore = require('connect-mongo')(express);
+  , RedisStore = require('connect-redis')(express);
 
 var app = express();
 
@@ -45,7 +45,7 @@ app.use(express.cookieParser(config.session));
 
 app.use(express.session({
     secret: config.session
-  , store: new MongoStore({db: config.db.name, url: config.db.url}) 
+  , store: new RedisStore(config.redis) 
   , cookie: { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/', domain: '.' + config.host }
 }));
 

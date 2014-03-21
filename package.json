@@ -24,7 +24,7 @@
     "mongoose": "~3.8.8",
     "passport": "~0.2.0",
     "passport-twitter": "~1.0.2",
-    "connect-mongo": "~0.4.0",
+    "connect-redis": "1.4.7",
     "passport-github": "~0.1.5",
     "gravatar": "~1.0.6"
   },

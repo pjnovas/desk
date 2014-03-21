@@ -2,7 +2,10 @@
   "db": {
       "name": "desk"
     , "host": "localhost"
-  } 
+  },
+  "redis": {
+    "host": "localhost"
+  }
  , "host": "local.host"
  , "port": 4000
  , "session": "holywacamole"
