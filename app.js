@@ -30,6 +30,9 @@ switch(app.get('env')){
   case "test":
     app.set('config', require('./app.config.test')); 
     break;
+  case "production":
+    app.set('config', require('./app.config.prod')); 
+    break;
 }
 
 var config = app.get('config');
