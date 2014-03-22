@@ -4,6 +4,7 @@ module.exports = function(app) {
   var root = '/api';
 
   require('./pines')(app, root, common);
+  require('./chronos')(app, root, common);
 
 };
 
