@@ -5,3 +5,4 @@ node_modules
 keys.json
 coverage.html
 app.config.prod.json
+dump.rdb
