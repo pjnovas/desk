@@ -56,7 +56,7 @@ var createPin = function(req, res, next){
       text: req.body.text
     , link: req.body.link
     , tags: tags
-    , created_at_at: Date.now()
+    , created_at: Date.now()
     , owner: req.user._id
   });
 

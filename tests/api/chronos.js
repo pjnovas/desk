@@ -108,7 +108,7 @@ module.exports = function(uri, userAuthA, userAuthB){
 
         });
       });
-
+/*
       describe('/chronos/:chronoId/logs', function(){
 
         before(function(done){
@@ -157,7 +157,7 @@ module.exports = function(uri, userAuthA, userAuthB){
         });
 
       });
-
+*/
     });
 
   });

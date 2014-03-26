@@ -36,6 +36,20 @@ module.exports = function(uri, userAuthA, userAuthB){
       });
     });
 
+    it('GET: should retrieve all current Pins for query', function(done){
+      
+      request.get(uri + '?q=a', _.clone(userAuthA), function (error, response, body) {
+        expect(error).to.not.be.ok();
+        expect(response.statusCode).to.be.equal(200);
+        
+        expect(response.body).to.be.an('array');
+        expect(response.body.length).to.be.equal(1);
+        expect(response.body[0].text).to.be.equal('PIN A');
+
+        done();
+      });
+    });
+
     it('POST: should create a Pin for the logged in user', function(done){
       
       request({
@@ -91,7 +105,11 @@ module.exports = function(uri, userAuthA, userAuthB){
           uri: uriId, 
           auth: _.clone(userAuthA.auth),
           method: "PUT",
-          body: { text: "some cool update" }
+          body: { 
+            text: "some cool update",
+            link: "google.com",
+            tags: ["tag1", "tag2", "tag3"]
+          }
         }, function (error, response, body) {
           expect(error).to.not.be.ok();
           expect(response.statusCode).to.be.equal(200);
@@ -99,6 +117,8 @@ module.exports = function(uri, userAuthA, userAuthB){
           expect(response.body).to.be.an('object');
           expect(response.body._id).to.be.equal(pina._id.toString());
           expect(response.body.text).to.be.equal('some cool update');
+          expect(response.body.link).to.be.equal('http://google.com');
+          expect(response.body.tags).to.be.eql(["tag1", "tag2", "tag3"]);
 
           done();
         });

@@ -15,4 +15,13 @@ module.exports = function() {
 
   mongoose.model('Pin', Pin);
 
+  Pin.pre('save', function (next) {
+    
+    if (this.link && this.link.indexOf('http') != 0){
+      this.link = 'http://' + this.link;
+    }
+
+    next();
+  });
+
 };

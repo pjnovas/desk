@@ -63,7 +63,7 @@ var createChrono = function(req, res, next){
   var chrono = new Chrono({
       title: req.body.title
     , hasLogs: req.body.hasLogs
-    , created_at_at: Date.now()
+    , created_at: Date.now()
     , owner: req.user._id
   });
 
