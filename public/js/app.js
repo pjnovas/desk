@@ -208,7 +208,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   },
 
   events: {
-    "click .toggle-chrono": "toggleVisible",
+    "click .chrono-title": "toggleVisible",
 
     "click .start": "chronoStart",
     "click .stop": "chronoStop",
