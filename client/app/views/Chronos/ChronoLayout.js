@@ -1,8 +1,8 @@
 
 var 
-    template = require("./templates/layout.hbs.js")
-  , PinsLayout = require("./Pins/Layout")
-  , ChronosLayout = require("./Chronos/Layout");
+    template = require("./templates/chronoLayout.hbs.js")
+  , ChronoEditView = require("./ChronoEdit")
+  , ChronoView = require("./Chrono");
 
 module.exports = Backbone.Marionette.Layout.extend({
 
@@ -10,26 +10,41 @@ module.exports = Backbone.Marionette.Layout.extend({
   //+ PUBLIC PROPERTIES / CONSTANTS
   //--------------------------------------
 
+  tagName: "li",
   template: template,
 
   regions:{
-    "pins": ".pins-ctn",
-    "chronos": ".chronos-ctn"
+    "container": ".chrono-content"
   },
 
   //--------------------------------------
   //+ INHERITED / OVERRIDES
   //--------------------------------------
 
-  initialize: function(){
-    
-  },
-
   onRender: function(){
+    var self = this;
 
-    this.pins.show(new PinsLayout());
-    this.chronos.show(new ChronosLayout());
+    function showChronoView(){
+      var chrono = new ChronoView({
+        model: self.model
+      });
+      
+      chrono.on('edit', showChronoEditView);
+      self.container.show(chrono);
+    }
 
+    function showChronoEditView(){
+      var chronoEdit = new ChronoEditView({
+        model: self.model
+      });
+
+      chronoEdit.on('saved', showChronoView);
+      chronoEdit.on('cancel', showChronoView);
+
+      self.container.show(chronoEdit);
+    }
+
+    showChronoView();
   }
 
   //--------------------------------------

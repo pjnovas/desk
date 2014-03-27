@@ -108,56 +108,7 @@ module.exports = function(uri, userAuthA, userAuthB){
 
         });
       });
-/*
-      describe('/chronos/:chronoId/logs', function(){
 
-        before(function(done){
-          
-          ChronoLog = mongoose.model('ChronoLog');
-
-          createChronoLogs(userAuthA._id, done);
-        });
-
-        it('GET: should retrieve all current Logs for a Chronos', function(done){
-          var uriLog = uri + "/" + chronob._id + "/logs";
-          
-          request.get(uriLog, _.clone(userAuthA), function (error, response, body) {
-            expect(error).to.not.be.ok();
-            expect(response.statusCode).to.be.equal(200);
-            
-            expect(response.body).to.be.an('array');
-            expect(response.body.length).to.be.equal(2);
-
-            done();
-          });
-        });
-
-        it('POST: should create a Log for a Chrono', function(done){
-          var time = new Date();
-          var uriLog = uri + "/" + chronob._id + "/logs";
-
-          request({
-            uri: uriLog, 
-            auth: _.clone(userAuthA.auth),
-            method: "POST",
-            body: { start: time, chrono: chronob._id }
-          }, function (error, response, body) {
-            expect(error).to.not.be.ok();
-            expect(response.statusCode).to.be.equal(200);
-            
-            expect(response.body).to.be.an('object');
-
-            expect(response.body._id).to.be.ok();
-            expect(response.body.start).to.be.equal(time);
-            expect(response.body.owner).to.be.eql(userAuthA._id.toString());
-
-            done();
-          }); 
-
-        });
-
-      });
-*/
     });
 
   });

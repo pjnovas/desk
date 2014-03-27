@@ -1,8 +1,11 @@
 
 var 
     template = require("./templates/layout.hbs.js")
-  , PinsLayout = require("./Pins/Layout")
-  , ChronosLayout = require("./Chronos/Layout");
+  , Pin = require("../../models/Pin")
+  , Pins = require("../../models/Pins")
+  , SearchPinsView = require("./SearchPins")
+  , PinView = require("./PinEdit")
+  , PinsView = require("./Pins");
 
 module.exports = Backbone.Marionette.Layout.extend({
 
@@ -13,8 +16,9 @@ module.exports = Backbone.Marionette.Layout.extend({
   template: template,
 
   regions:{
-    "pins": ".pins-ctn",
-    "chronos": ".chronos-ctn"
+    "searchPins": ".search-pins",
+    "createPin": ".new-pin",
+    "pinsCtn": "#pins"
   },
 
   //--------------------------------------
@@ -22,14 +26,32 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
   initialize: function(){
-    
+    this.pins = new Pins();
+    this.pins.fetch();
   },
 
   onRender: function(){
 
-    this.pins.show(new PinsLayout());
-    this.chronos.show(new ChronosLayout());
+    this.searchPins.show(new SearchPinsView({
+      collection: this.pins
+    }));
 
+    var pinView = new PinView({
+      model: new Pin()
+    });
+
+    var self = this;
+    pinView.on("saved", function(){
+      self.pins.add(pinView.model);
+      pinView.model = new Pin();
+      pinView.render();
+    });
+
+    this.createPin.show(pinView);
+
+    this.pinsCtn.show(new PinsView({
+      collection: this.pins
+    }));
   }
 
   //--------------------------------------

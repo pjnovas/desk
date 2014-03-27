@@ -1,37 +1,24 @@
+/**
+ * VIEW: Chronos
+ * 
+ */
 
-var 
-    template = require("./templates/layout.hbs.js")
-  , PinsLayout = require("./Pins/Layout")
-  , ChronosLayout = require("./Chronos/Layout");
+var ChronoLayout = require('./ChronoLayout');
 
-module.exports = Backbone.Marionette.Layout.extend({
+module.exports = Backbone.Marionette.CollectionView.extend({
 
   //--------------------------------------
   //+ PUBLIC PROPERTIES / CONSTANTS
   //--------------------------------------
 
-  template: template,
-
-  regions:{
-    "pins": ".pins-ctn",
-    "chronos": ".chronos-ctn"
-  },
+  className: "chronos",
+  tagName: "ul",
+  itemView: ChronoLayout,
 
   //--------------------------------------
   //+ INHERITED / OVERRIDES
   //--------------------------------------
-
-  initialize: function(){
-    
-  },
-
-  onRender: function(){
-
-    this.pins.show(new PinsLayout());
-    this.chronos.show(new ChronosLayout());
-
-  }
-
+  
   //--------------------------------------
   //+ PUBLIC METHODS / GETTERS / SETTERS
   //--------------------------------------

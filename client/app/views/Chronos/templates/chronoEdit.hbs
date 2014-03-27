@@ -1,0 +1,23 @@
+
+<div class="row">
+  <div class="col-xs-10" style="margin-bottom: 5px;">
+    <input id="txt-title" type="text" class="form-control" placeholder="type a title" value="{{title}}">    
+  </div>
+
+  {{#if isNew}}
+  <div class="col-md-2 col-sm-2">
+    <a class="acn-btn btn success save-chrono">
+      <i class="fa fa-plus"></i>
+    </a>
+  </div>
+  {{else}}
+  <div class="col-md-3 col-sm-12">
+    <a class="acn-btn btn success save-chrono">
+      <i class="fa fa-check"></i>
+    </a>
+    <a class="acn-btn btn danger cancel-chrono">
+      <i class="fa fa-times"></i>
+    </a>
+  </div>
+  {{/if}}
+</div>

@@ -1,8 +1,10 @@
 
 var 
     template = require("./templates/layout.hbs.js")
-  , PinsLayout = require("./Pins/Layout")
-  , ChronosLayout = require("./Chronos/Layout");
+  , Chrono = require("../../models/Chrono")
+  , Chronos = require("../../models/Chronos")
+  , ChronoView = require("./ChronoEdit")
+  , ChronosView = require("./Chronos");
 
 module.exports = Backbone.Marionette.Layout.extend({
 
@@ -13,8 +15,8 @@ module.exports = Backbone.Marionette.Layout.extend({
   template: template,
 
   regions:{
-    "pins": ".pins-ctn",
-    "chronos": ".chronos-ctn"
+    "createChrono": ".new-chrono",
+    "chronosCtn": "#chronos"
   },
 
   //--------------------------------------
@@ -22,14 +24,28 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
   initialize: function(){
-    
+    this.chronos = new Chronos();
+    this.chronos.fetch();
   },
 
   onRender: function(){
 
-    this.pins.show(new PinsLayout());
-    this.chronos.show(new ChronosLayout());
+    var chronoView = new ChronoView({
+      model: new Chrono()
+    });
 
+    var self = this;
+    chronoView.on("saved", function(){
+      self.chronos.add(chronoView.model);
+      chronoView.model = new Chrono();
+      chronoView.render();
+    });
+
+    this.createChrono.show(chronoView);
+
+    this.chronosCtn.show(new ChronosView({
+      collection: this.chronos
+    }));
   }
 
   //--------------------------------------

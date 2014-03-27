@@ -60,7 +60,7 @@ module.exports = function(){
   window.desk.app.start();
 
 };
-},{"./views/Footer":8,"./views/Header":9,"./views/Layout":10,"./views/ModalRegion":12}],3:[function(require,module,exports){
+},{"./views/Footer":19,"./views/Header":20,"./views/Layout":21,"./views/ModalRegion":23}],3:[function(require,module,exports){
 /*
  * Backbone Global Overrides
  *
@@ -103,6 +103,44 @@ jQuery(function() {
 });
 },{"./Initializer":1}],6:[function(require,module,exports){
 /**
+ * MODEL: Chrono
+ *
+ */
+
+module.exports = Backbone.Model.extend({
+
+  idAttribute: "_id",
+
+  urlRoot: function(){
+    return desk.apiURL + '/chronos'; 
+  }
+
+});
+
+
+},{}],7:[function(require,module,exports){
+/**
+ * Collection: Chronos
+ *
+ */
+
+var 
+  Chrono = require('./Chrono');
+
+module.exports = Backbone.Collection.extend({
+
+  model: Chrono,
+
+  idAttribute: "_id",
+  
+  url: function(){
+    return desk.apiURL + '/chronos'; 
+  },
+
+});
+
+},{"./Chrono":6}],8:[function(require,module,exports){
+/**
  * MODEL: Pin
  *
  */
@@ -118,7 +156,7 @@ module.exports = Backbone.Model.extend({
 });
 
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /**
  * Collection: Pins
  *
@@ -139,7 +177,399 @@ module.exports = Backbone.Collection.extend({
 
 });
 
-},{"./Pin":6}],8:[function(require,module,exports){
+},{"./Pin":8}],10:[function(require,module,exports){
+/**
+ * VIEW: Chrono
+ * 
+ */
+ 
+var template = require('./templates/chrono.hbs.js');
+
+module.exports = Backbone.Marionette.ItemView.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  template: template,
+
+  ui:{
+    timer: ".chrono-time"
+  },
+
+  events: {
+    "click .start": "chronoStart",
+    "click .stop": "chronoStop",
+    "click .reset": "chronoReset"
+  },
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+
+  onRender: function(){
+    var self = this;
+    _.defer(function(){
+      self.initTimeCircles();
+    });
+  },
+
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  chronoStart: function(){
+    this.ui.timer.TimeCircles().start();
+  },
+
+  chronoStop: function(){
+    this.ui.timer.TimeCircles().stop();
+  },
+
+  chronoReset: function(){
+    this.ui.timer.TimeCircles().restart();
+  },
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+  initTimeCircles: function(){
+
+    this.ui.timer.TimeCircles({
+      start: true,
+      animation: "smooth",
+      bg_width: 1.2,
+      fg_width: 0.1,
+      circle_bg_color: "#60686F",
+      time: {
+        Days: { show: false },
+        Hours: {
+          text: "Hours",
+          color: "#99CCFF",
+          show: true
+        },
+        Minutes: {
+          text: "Minutes",
+          color: "#BBFFBB",
+          show: true
+        },
+        Seconds: {
+          text: "Seconds",
+          color: "#FF9999",
+          show: true
+        }
+      }
+    }).stop();
+  }
+
+});
+},{"./templates/chrono.hbs.js":15}],11:[function(require,module,exports){
+/**
+ * VIEW: Edit Chrono
+ * 
+ */
+ 
+var template = require('./templates/chronoEdit.hbs.js');
+
+module.exports = Backbone.Marionette.ItemView.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  className: "chrono",
+  template: template,
+
+  ui: {
+    "title": "#txt-title"
+  },
+
+  events:{
+    "click .save-chrono": "saveChrono",
+    "click .cancel-chrono": "cancelChrono"
+  },
+
+  templateHelpers: {
+    isNew: function(){
+      return this._id ? false : true;
+    }
+  },
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  onRender: function(){
+    
+  },
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  saveChrono: function(){
+    var toSave = {
+      title: this.ui.title.val()
+    };
+
+    this.model
+      .save(toSave, { patch: true, silent: true })
+      .success(this.chronoSaved.bind(this));
+  },
+
+  chronoSaved: function(){
+    this.trigger("saved");
+  },
+
+  cancelChrono: function(){
+    this.trigger("cancel");
+  }
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+});
+},{"./templates/chronoEdit.hbs.js":16}],12:[function(require,module,exports){
+
+var 
+    template = require("./templates/chronoLayout.hbs.js")
+  , ChronoEditView = require("./ChronoEdit")
+  , ChronoView = require("./Chrono");
+
+module.exports = Backbone.Marionette.Layout.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  tagName: "li",
+  template: template,
+
+  regions:{
+    "container": ".chrono-content"
+  },
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+
+  onRender: function(){
+    var self = this;
+
+    function showChronoView(){
+      var chrono = new ChronoView({
+        model: self.model
+      });
+      
+      chrono.on('edit', showChronoEditView);
+      self.container.show(chrono);
+    }
+
+    function showChronoEditView(){
+      var chronoEdit = new ChronoEditView({
+        model: self.model
+      });
+
+      chronoEdit.on('saved', showChronoView);
+      chronoEdit.on('cancel', showChronoView);
+
+      self.container.show(chronoEdit);
+    }
+
+    showChronoView();
+  }
+
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+});
+},{"./Chrono":10,"./ChronoEdit":11,"./templates/chronoLayout.hbs.js":17}],13:[function(require,module,exports){
+/**
+ * VIEW: Chronos
+ * 
+ */
+
+var ChronoLayout = require('./ChronoLayout');
+
+module.exports = Backbone.Marionette.CollectionView.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  className: "chronos",
+  tagName: "ul",
+  itemView: ChronoLayout,
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+  
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+});
+},{"./ChronoLayout":12}],14:[function(require,module,exports){
+
+var 
+    template = require("./templates/layout.hbs.js")
+  , Chrono = require("../../models/Chrono")
+  , Chronos = require("../../models/Chronos")
+  , ChronoView = require("./ChronoEdit")
+  , ChronosView = require("./Chronos");
+
+module.exports = Backbone.Marionette.Layout.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  template: template,
+
+  regions:{
+    "createChrono": ".new-chrono",
+    "chronosCtn": "#chronos"
+  },
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+
+  initialize: function(){
+    this.chronos = new Chronos();
+    this.chronos.fetch();
+  },
+
+  onRender: function(){
+
+    var chronoView = new ChronoView({
+      model: new Chrono()
+    });
+
+    var self = this;
+    chronoView.on("saved", function(){
+      self.chronos.add(chronoView.model);
+      chronoView.model = new Chrono();
+      chronoView.render();
+    });
+
+    this.createChrono.show(chronoView);
+
+    this.chronosCtn.show(new ChronosView({
+      collection: this.chronos
+    }));
+  }
+
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+});
+},{"../../models/Chrono":6,"../../models/Chronos":7,"./ChronoEdit":11,"./Chronos":13,"./templates/layout.hbs.js":18}],15:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression;
+
+
+  buffer += "<div class=\"chrono-title\">";
+  if (stack1 = helpers.title) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.title; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "</div>\n<div class=\"chrono-time\" data-timer=\"0\"></div>\n<div class=\"chrono-controls\">\n  <a class=\"start\"><i class=\"fa fa-play\"></i></a>\n  <a class=\"stop\"><i class=\"fa fa-stop\"></i></a>\n  <a class=\"reset\"><i class=\"fa fa-undo\"></i></a>\n</div>";
+  return buffer;
+  })
+;
+
+},{}],16:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  
+  return "\n  <div class=\"col-md-2 col-sm-2\">\n    <a class=\"acn-btn btn success save-chrono\">\n      <i class=\"fa fa-plus\"></i>\n    </a>\n  </div>\n  ";
+  }
+
+function program3(depth0,data) {
+  
+  
+  return "\n  <div class=\"col-md-3 col-sm-12\">\n    <a class=\"acn-btn btn success save-chrono\">\n      <i class=\"fa fa-check\"></i>\n    </a>\n    <a class=\"acn-btn btn danger cancel-chrono\">\n      <i class=\"fa fa-times\"></i>\n    </a>\n  </div>\n  ";
+  }
+
+  buffer += "\n<div class=\"row\">\n  <div class=\"col-xs-10\" style=\"margin-bottom: 5px;\">\n    <input id=\"txt-title\" type=\"text\" class=\"form-control\" placeholder=\"type a title\" value=\"";
+  if (stack1 = helpers.title) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.title; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "\">    \n  </div>\n\n  ";
+  stack1 = helpers['if'].call(depth0, depth0.isNew, {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n</div>";
+  return buffer;
+  })
+;
+
+},{}],17:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<div class=\"chrono-content\"></div>";
+  })
+;
+
+},{}],18:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<div class=\"row\">\n  <div class=\"col-md-12 new-chrono\"></div>\n</div>\n<div class=\"row\">\n  <div id=\"chronos\" class=\"col-md-12\"></div>\n</div>\n";
+  })
+;
+
+},{}],19:[function(require,module,exports){
 
 var 
     template = require("./templates/footer.hbs.js");
@@ -169,7 +599,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./templates/footer.hbs.js":18}],9:[function(require,module,exports){
+},{"./templates/footer.hbs.js":35}],20:[function(require,module,exports){
 
 var 
     template = require("./templates/header.hbs.js"),
@@ -214,12 +644,128 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./Login":11,"./templates/header.hbs.js":19}],10:[function(require,module,exports){
+},{"./Login":22,"./templates/header.hbs.js":36}],21:[function(require,module,exports){
 
 var 
     template = require("./templates/layout.hbs.js")
-  , Pin = require("../models/Pin")
-  , Pins = require("../models/Pins")
+  , PinsLayout = require("./Pins/Layout")
+  , ChronosLayout = require("./Chronos/Layout");
+
+module.exports = Backbone.Marionette.Layout.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  template: template,
+
+  regions:{
+    "pins": ".pins-ctn",
+    "chronos": ".chronos-ctn"
+  },
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+
+  initialize: function(){
+    
+  },
+
+  onRender: function(){
+
+    this.pins.show(new PinsLayout());
+    this.chronos.show(new ChronosLayout());
+
+  }
+
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+});
+},{"./Chronos/Layout":14,"./Pins/Layout":24,"./templates/layout.hbs.js":37}],22:[function(require,module,exports){
+/**
+ * VIEW: Login Modal
+ * 
+ */
+ 
+var template = require('./templates/login.hbs.js');
+
+module.exports = Backbone.Marionette.ItemView.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  template: template,
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+
+  initialize: function(){
+    this.model = new Backbone.Model({ providers: window.desk.providers.split(',') });
+  }
+
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+});
+},{"./templates/login.hbs.js":38}],23:[function(require,module,exports){
+/**
+ * REGION: ModalRegion
+ * Used to manage Twitter Bootstrap Modals with Backbone Marionette Views
+ */
+
+module.exports = Backbone.Marionette.Region.extend({
+  el: "#modals-container",
+
+  constructor: function(){
+    Backbone.Marionette.Region.prototype.constructor.apply(this, arguments);
+    this.on("show", this.showModal, this);
+  },
+
+  getEl: function(selector){
+    var $el = $(selector);
+    $el.on("hidden", this.close);
+    return $el;
+  },
+
+  showModal: function(view){
+    view.on("close", this.hideModal, this);
+    this.$el.parents('.modal').modal('show');
+  },
+
+  hideModal: function(){
+    this.$el.parents('.modal').modal('hide');
+  }
+  
+});
+
+},{}],24:[function(require,module,exports){
+
+var 
+    template = require("./templates/layout.hbs.js")
+  , Pin = require("../../models/Pin")
+  , Pins = require("../../models/Pins")
   , SearchPinsView = require("./SearchPins")
   , PinView = require("./PinEdit")
   , PinsView = require("./Pins");
@@ -284,75 +830,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"../models/Pin":6,"../models/Pins":7,"./PinEdit":14,"./Pins":16,"./SearchPins":17,"./templates/layout.hbs.js":20}],11:[function(require,module,exports){
-/**
- * VIEW: Login Modal
- * 
- */
- 
-var template = require('./templates/login.hbs.js');
-
-module.exports = Backbone.Marionette.ItemView.extend({
-
-  //--------------------------------------
-  //+ PUBLIC PROPERTIES / CONSTANTS
-  //--------------------------------------
-
-  template: template,
-
-  //--------------------------------------
-  //+ INHERITED / OVERRIDES
-  //--------------------------------------
-
-  initialize: function(){
-    this.model = new Backbone.Model({ providers: window.desk.providers.split(',') });
-  }
-
-  //--------------------------------------
-  //+ PUBLIC METHODS / GETTERS / SETTERS
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ EVENT HANDLERS
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ PRIVATE AND PROTECTED METHODS
-  //--------------------------------------
-
-});
-},{"./templates/login.hbs.js":21}],12:[function(require,module,exports){
-/**
- * REGION: ModalRegion
- * Used to manage Twitter Bootstrap Modals with Backbone Marionette Views
- */
-
-module.exports = Backbone.Marionette.Region.extend({
-  el: "#modals-container",
-
-  constructor: function(){
-    Backbone.Marionette.Region.prototype.constructor.apply(this, arguments);
-    this.on("show", this.showModal, this);
-  },
-
-  getEl: function(selector){
-    var $el = $(selector);
-    $el.on("hidden", this.close);
-    return $el;
-  },
-
-  showModal: function(view){
-    view.on("close", this.hideModal, this);
-    this.$el.parents('.modal').modal('show');
-  },
-
-  hideModal: function(){
-    this.$el.parents('.modal').modal('hide');
-  }
-  
-});
-
-},{}],13:[function(require,module,exports){
+},{"../../models/Pin":8,"../../models/Pins":9,"./PinEdit":26,"./Pins":28,"./SearchPins":29,"./templates/layout.hbs.js":30}],25:[function(require,module,exports){
 /**
  * VIEW: Pin
  * 
@@ -427,7 +905,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/pin.hbs.js":22}],14:[function(require,module,exports){
+},{"./templates/pin.hbs.js":31}],26:[function(require,module,exports){
 /**
  * VIEW: Edit Pin
  * 
@@ -502,7 +980,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/pinEdit.hbs.js":23}],15:[function(require,module,exports){
+},{"./templates/pinEdit.hbs.js":32}],27:[function(require,module,exports){
 
 var 
     template = require("./templates/pinLayout.hbs.js")
@@ -565,7 +1043,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./Pin":13,"./PinEdit":14,"./templates/pinLayout.hbs.js":24}],16:[function(require,module,exports){
+},{"./Pin":25,"./PinEdit":26,"./templates/pinLayout.hbs.js":33}],28:[function(require,module,exports){
 /**
  * VIEW: Pins
  * 
@@ -600,7 +1078,7 @@ module.exports = Backbone.Marionette.CollectionView.extend({
   //--------------------------------------
 
 });
-},{"./PinLayout":15}],17:[function(require,module,exports){
+},{"./PinLayout":27}],29:[function(require,module,exports){
 /**
  * VIEW: Search Pins
  * 
@@ -667,56 +1145,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/searchPins.hbs.js":25}],18:[function(require,module,exports){
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "";
-
-
-  return buffer;
-  })
-;
-
-},{}],19:[function(require,module,exports){
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, options, functionType="function", escapeExpression=this.escapeExpression, self=this, blockHelperMissing=helpers.blockHelperMissing;
-
-function program1(depth0,data) {
-  
-  var buffer = "", stack1;
-  buffer += "\n      <form class=\"navbar-form navbar-right\">\n        <img src=";
-  if (stack1 = helpers.picture) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
-  else { stack1 = depth0.picture; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
-  buffer += escapeExpression(stack1)
-    + " style=\"width: 30px; height: 30px;\">\n        <span>";
-  if (stack1 = helpers.username) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
-  else { stack1 = depth0.username; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
-  buffer += escapeExpression(stack1)
-    + " </span>\n        (<a href=\"/logout\">exit</a>)\n      </form>\n      ";
-  return buffer;
-  }
-
-function program3(depth0,data) {
-  
-  
-  return "\n      <form class=\"navbar-form navbar-right\">\n        <button id=\"show-login\" type=\"button\" class=\"btn btn-success\">Sign in</button>\n      </form>\n      ";
-  }
-
-  buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <label class=\"navbar-brand\">Desk</label>\n    </div>\n    <div class=\"navbar-collapse collapse\">\n      ";
-  options = {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data};
-  if (stack1 = helpers.isLoggedIn) { stack1 = stack1.call(depth0, options); }
-  else { stack1 = depth0.isLoggedIn; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
-  if (!helpers.isLoggedIn) { stack1 = blockHelperMissing.call(depth0, stack1, options); }
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n    </div>\n  </div>\n</div>";
-  return buffer;
-  })
-;
-
-},{}],20:[function(require,module,exports){
+},{"./templates/searchPins.hbs.js":34}],30:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -727,35 +1156,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],21:[function(require,module,exports){
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = "", stack1, options;
-  buffer += "\n    <a href=\"/auth/"
-    + escapeExpression((typeof depth0 === functionType ? depth0.apply(depth0) : depth0))
-    + "\" class=\"btn btn-large signup-btn signup-"
-    + escapeExpression((typeof depth0 === functionType ? depth0.apply(depth0) : depth0))
-    + "\" data-bypass>\n      <i></i>Access with ";
-  options = {hash:{},data:data};
-  buffer += escapeExpression(((stack1 = helpers.firstUpper || depth0.firstUpper),stack1 ? stack1.call(depth0, depth0, options) : helperMissing.call(depth0, "firstUpper", depth0, options)))
-    + "\n    </a>\n    ";
-  return buffer;
-  }
-
-  buffer += "\n<div class=\"modal-header\">\n  <button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button>\n  <h3>Log in</h3>\n</div>\n<div class=\"row\">\n  <div class=\"span4 offset1\">\n    ";
-  stack1 = helpers.each.call(depth0, depth0.providers, {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n  </div>\n</div>";
-  return buffer;
-  })
-;
-
-},{}],22:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -788,7 +1189,7 @@ function program1(depth0,data) {
   })
 ;
 
-},{}],23:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -826,7 +1227,7 @@ function program3(depth0,data) {
   })
 ;
 
-},{}],24:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -837,7 +1238,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],25:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -845,6 +1246,94 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
 
   return "<input type=\"text\" class=\"form-control\" placeholder=\"search\">";
+  })
+;
+
+},{}],35:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "";
+
+
+  return buffer;
+  })
+;
+
+},{}],36:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, options, functionType="function", escapeExpression=this.escapeExpression, self=this, blockHelperMissing=helpers.blockHelperMissing;
+
+function program1(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n      <form class=\"navbar-form navbar-right\">\n        <img src=";
+  if (stack1 = helpers.picture) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.picture; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + " style=\"width: 30px; height: 30px;\">\n        <span>";
+  if (stack1 = helpers.username) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.username; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  buffer += escapeExpression(stack1)
+    + " </span>\n        (<a href=\"/logout\">exit</a>)\n      </form>\n      ";
+  return buffer;
+  }
+
+function program3(depth0,data) {
+  
+  
+  return "\n      <form class=\"navbar-form navbar-right\">\n        <button id=\"show-login\" type=\"button\" class=\"btn btn-success\">Sign in</button>\n      </form>\n      ";
+  }
+
+  buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <label class=\"navbar-brand\">Desk</label>\n    </div>\n    <div class=\"navbar-collapse collapse\">\n      ";
+  options = {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data};
+  if (stack1 = helpers.isLoggedIn) { stack1 = stack1.call(depth0, options); }
+  else { stack1 = depth0.isLoggedIn; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  if (!helpers.isLoggedIn) { stack1 = blockHelperMissing.call(depth0, stack1, options); }
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n    </div>\n  </div>\n</div>";
+  return buffer;
+  })
+;
+
+},{}],37:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<div class=\"col-md-6 pins-ctn\"></div>\n<div class=\"col-md-6 chronos-ctn\"></div>";
+  })
+;
+
+},{}],38:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = "", stack1, options;
+  buffer += "\n    <a href=\"/auth/"
+    + escapeExpression((typeof depth0 === functionType ? depth0.apply(depth0) : depth0))
+    + "\" class=\"btn btn-large signup-btn signup-"
+    + escapeExpression((typeof depth0 === functionType ? depth0.apply(depth0) : depth0))
+    + "\" data-bypass>\n      <i></i>Access with ";
+  options = {hash:{},data:data};
+  buffer += escapeExpression(((stack1 = helpers.firstUpper || depth0.firstUpper),stack1 ? stack1.call(depth0, depth0, options) : helperMissing.call(depth0, "firstUpper", depth0, options)))
+    + "\n    </a>\n    ";
+  return buffer;
+  }
+
+  buffer += "\n<div class=\"modal-header\">\n  <button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button>\n  <h3>Log in</h3>\n</div>\n<div class=\"row\">\n  <div class=\"span4 offset1\">\n    ";
+  stack1 = helpers.each.call(depth0, depth0.providers, {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n  </div>\n</div>";
+  return buffer;
   })
 ;
 
