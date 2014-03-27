@@ -1,7 +1,15 @@
-<div class="chrono-title">{{title}}</div>
-<div class="chrono-time" data-timer="0"></div>
-<div class="chrono-controls">
-  <a class="start"><i class="fa fa-play"></i></a>
-  <a class="stop"><i class="fa fa-stop"></i></a>
-  <a class="reset"><i class="fa fa-undo"></i></a>
+<div class="chrono-title">{{title}} 
+  <a class="toggle-chrono pull-right"><i class="fa fa-chevron-down"></i></a>
 </div>
+<div class="chrono-view hide">
+  <div class="chrono-time" data-timer="0"></div>
+  <div class="chrono-controls">
+    <a class="start"><i class="fa fa-play"></i></a>
+    <a class="stop hide"><i class="fa fa-stop"></i></a>
+    <a class="reset hide"><i class="fa fa-undo"></i></a>
+    <a class="logit hide"><i class="fa fa-sign-in"></i></a>
+
+    <a class="edit"><i class="fa fa-edit"></i></a>
+    <a class="remove"><i class="fa fa-trash-o"></i></a>
+  </div>
+<div>

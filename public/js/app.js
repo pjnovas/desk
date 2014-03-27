@@ -194,13 +194,29 @@ module.exports = Backbone.Marionette.ItemView.extend({
   template: template,
 
   ui:{
-    timer: ".chrono-time"
+    timer: ".chrono-time",
+    toggle: ".toggle-chrono",
+    view: ".chrono-view",
+
+    play: ".start",
+    stop: ".stop",
+    reset: ".reset",
+    logit: ".logit",
+
+    edit: ".edit",
+    remove: ".remove",
   },
 
   events: {
+    "click .toggle-chrono": "toggleVisible",
+
     "click .start": "chronoStart",
     "click .stop": "chronoStop",
-    "click .reset": "chronoReset"
+    "click .reset": "chronoReset",
+    "click .logit": "chronoLogit",
+
+    "click .edit": "chronoEdit",
+    "click .remove": "chronoRemove",
   },
 
   //--------------------------------------
@@ -222,21 +238,78 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //+ EVENT HANDLERS
   //--------------------------------------
 
+  toggleVisible: function(){
+    if (this.ui.view.hasClass("hide")){
+      this.ui.toggle.children("i")
+        .removeClass("fa-chevron-down")
+        .addClass("fa-chevron-up");
+
+      this.ui.view.removeClass("hide");
+      this.ui.timer.TimeCircles().rebuild().start().stop();
+    }
+    else {
+      this.ui.toggle.children("i")
+        .removeClass("fa-chevron-up")
+        .addClass("fa-chevron-down");
+
+      this.ui.view.addClass("hide");
+    }
+  },
+
   chronoStart: function(){
     this.ui.timer.TimeCircles().start();
+
+    this.toggleButtons(["play", "logit", "reset", "edit", "remove"], false);
+    this.toggleButtons(["stop"], true);
   },
 
   chronoStop: function(){
     this.ui.timer.TimeCircles().stop();
+
+    this.toggleButtons(["play", "logit", "reset"], true);
+    this.toggleButtons(["stop"], false);
   },
 
   chronoReset: function(){
-    this.ui.timer.TimeCircles().restart();
+    this.ui.timer.TimeCircles().restart().stop();
+
+    this.toggleButtons(["play", "edit", "remove"], true);
+    this.toggleButtons(["reset", "logit", "stop"], false);
+  },
+
+  chronoLogit: function(){
+    //TODO: Send a log
+
+    this.chronoReset();
+  },
+
+  chronoEdit: function(e){
+    this.trigger('edit');
+    e.stopPropagation();
+  },
+
+  chronoRemove: function(e){
+    if (window.confirm("Is going to be deleted, sure?")){
+      this.model.destroy();
+    }
+
+    e.stopPropagation();
   },
 
   //--------------------------------------
   //+ PRIVATE AND PROTECTED METHODS
   //--------------------------------------
+
+  toggleButtons: function(btns, show){
+    for (var i=0; i < btns.length; i++){
+      if (show){
+        this.ui[btns[i]].removeClass("hide");
+      }
+      else {
+        this.ui[btns[i]].addClass("hide");
+      }
+    }
+  },
 
   initTimeCircles: function(){
 
@@ -512,7 +585,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if (stack1 = helpers.title) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.title; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "</div>\n<div class=\"chrono-time\" data-timer=\"0\"></div>\n<div class=\"chrono-controls\">\n  <a class=\"start\"><i class=\"fa fa-play\"></i></a>\n  <a class=\"stop\"><i class=\"fa fa-stop\"></i></a>\n  <a class=\"reset\"><i class=\"fa fa-undo\"></i></a>\n</div>";
+    + " \n  <a class=\"toggle-chrono pull-right\"><i class=\"fa fa-chevron-down\"></i></a>\n</div>\n<div class=\"chrono-view hide\">\n  <div class=\"chrono-time\" data-timer=\"0\"></div>\n  <div class=\"chrono-controls\">\n    <a class=\"start\"><i class=\"fa fa-play\"></i></a>\n    <a class=\"stop hide\"><i class=\"fa fa-stop\"></i></a>\n    <a class=\"reset hide\"><i class=\"fa fa-undo\"></i></a>\n    <a class=\"logit hide\"><i class=\"fa fa-sign-in\"></i></a>\n\n    <a class=\"edit\"><i class=\"fa fa-edit\"></i></a>\n    <a class=\"remove\"><i class=\"fa fa-trash-o\"></i></a>\n  </div>\n<div>";
   return buffer;
   })
 ;
@@ -532,7 +605,7 @@ function program1(depth0,data) {
 function program3(depth0,data) {
   
   
-  return "\n  <div class=\"col-md-3 col-sm-12\">\n    <a class=\"acn-btn btn success save-chrono\">\n      <i class=\"fa fa-check\"></i>\n    </a>\n    <a class=\"acn-btn btn danger cancel-chrono\">\n      <i class=\"fa fa-times\"></i>\n    </a>\n  </div>\n  ";
+  return "\n  <div class=\"col-md-2 col-sm-2\">\n    <a class=\"acn-btn btn success save-chrono\">\n      <i class=\"fa fa-check\"></i>\n    </a>\n    <a class=\"acn-btn btn danger cancel-chrono\">\n      <i class=\"fa fa-times\"></i>\n    </a>\n  </div>\n  ";
   }
 
   buffer += "\n<div class=\"row\">\n  <div class=\"col-xs-10\" style=\"margin-bottom: 5px;\">\n    <input id=\"txt-title\" type=\"text\" class=\"form-control\" placeholder=\"type a title\" value=\"";
@@ -1287,7 +1360,7 @@ function program3(depth0,data) {
   return "\n      <form class=\"navbar-form navbar-right\">\n        <button id=\"show-login\" type=\"button\" class=\"btn btn-success\">Sign in</button>\n      </form>\n      ";
   }
 
-  buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <label class=\"navbar-brand\">Desk</label>\n    </div>\n    <div class=\"navbar-collapse collapse\">\n      ";
+  buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\n  <div class=\"container\">\n    <div class=\"navbar-header\">\n      <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">\n        <span class=\"sr-only\">Toggle navigation</span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </button>\n      <label class=\"navbar-brand\">Warrior Desk</label>\n    </div>\n    <div class=\"navbar-collapse collapse\">\n      ";
   options = {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data};
   if (stack1 = helpers.isLoggedIn) { stack1 = stack1.call(depth0, options); }
   else { stack1 = depth0.isLoggedIn; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
