@@ -7,9 +7,8 @@ var expect = require('expect.js')
 
 request = request.defaults({ json: true });
 
-var Chrono, ChronoLog;
+var Chrono;
 var chrona, chronb, chronc;
-var chronLoga, chronLogb;
 
 module.exports = function(uri, userAuthA, userAuthB){
 
@@ -126,24 +125,6 @@ function createChronos(usera, userb, done){
       chronoc.save(function(){
         done();
       });
-    });
-  });
-}
-
-function createChronoLogs(usera, done){
-
-  function getDateTime(hours){
-    var dt = new Date();
-    var hours = dt.setHours(dt.getHours() + hours);
-    return dt;
-  }
-
-  chronoLoga = new ChronoLog({ start: getDateTime(+1), end: getDateTime(+2), chrono: chronob._id, owner: usera });
-  chronoLogb = new ChronoLog({ start: getDateTime(+4), end: getDateTime(+6), chrono: chronob._id, owner: usera });
-
-  chronoLoga.save(function(){ 
-    chronoLogb.save(function(){
-      done();
     });
   });
 }

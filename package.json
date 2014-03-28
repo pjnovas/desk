@@ -26,7 +26,8 @@
     "passport-twitter": "~1.0.2",
     "connect-redis": "1.4.7",
     "passport-github": "~0.1.5",
-    "gravatar": "~1.0.6"
+    "gravatar": "~1.0.6",
+    "moment": "~2.5.1"
   },
   "devDependencies": {
     "browserify": "~3.32.1",

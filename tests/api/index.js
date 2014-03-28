@@ -2,7 +2,6 @@
 
 var expect = require('expect.js')
   , config = require('../../app.config.test')
-  , config = require('../../app.config.test')
   , baseURL = "http://" + config.host + ":" + config.port + "/api"
   , request = require('request')
   , mongoose = require('mongoose');
@@ -26,6 +25,7 @@ describe('/api', function(){
 
   require('./pines')(baseURL, userAuthA, userAuthB);
   require('./chronos')(baseURL, userAuthA, userAuthB);
+  require('./chronoLogs')(baseURL, userAuthA, userAuthB);
 
 });
 

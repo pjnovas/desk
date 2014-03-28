@@ -13,7 +13,7 @@ var ResourceAPI = module.exports = function(app, options) {
   this.baseURI_ID = this.baseURI + "/:id";
 
   this.attachRoutes(app);
-}
+};
 
 ResourceAPI.prototype.attachRoutes = function(app) {
 
