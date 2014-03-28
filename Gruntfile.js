@@ -85,6 +85,8 @@ module.exports = function(grunt) {
 
           , '<%= paths.vendor.js %>backbone.marionette.min.js'
           , '<%= paths.vendor.js %>bootstrap.min.js'
+          , '<%= paths.vendor.js %>moment-with-langs.min.js'
+          , '<%= paths.vendor.js %>jquery-ui.custom.min.js'
           , '<%= paths.vendor.js %>**/*.js'
          ],
         dest: '<%= paths.dist.root %><%= paths.dist.vendorName %>'

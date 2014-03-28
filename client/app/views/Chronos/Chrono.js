@@ -127,9 +127,31 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
   chronoLogit: function(){
 
+    var start = moment(this.model.get("start")).seconds(0);
+    var end = moment(this.model.get("end")).seconds(0);
+
+    function roundMinutes(dtMoment){
+      if (dtMoment.minutes() < 15){
+        dtMoment.minutes(0);
+      }
+      else if (dtMoment.minutes() < 45){
+        dtMoment.minutes(30);
+      }
+      else { // > 45
+        dtMoment.add("hours", 1).minutes(0);
+      }
+    }
+
+    roundMinutes(start);
+    roundMinutes(end);
+
+    if(start.diff(end, "minutes") < 30){
+      end = start.clone().add("minutes", 30);
+    }
+
     desk.app.chronoLogs.create({
-      start: this.model.get("start"),
-      end: this.model.get("end"),
+      start: start.format(),
+      end: end.format(),
       chrono: this.model.get("_id")
     });
 

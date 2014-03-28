@@ -14,3 +14,11 @@ Handlebars.registerHelper('isLoggedIn', function(options) {
 Handlebars.registerHelper('firstUpper', function(text) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 });
+
+Handlebars.registerHelper('formatDateTime', function(date) {
+  if (date && moment(date).isValid()) {
+    return moment(date).format("HH:mm");
+  } 
+  
+  return "";
+});

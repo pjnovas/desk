@@ -6,7 +6,7 @@ var
   , ChronoLogs = require("../../models/ChronoLogs")
   , ChronoView = require("./ChronoEdit")
   , ChronosView = require("./Chronos")
-  , ChronoLogsView = require("./ChronoLogs");
+  , Calendar = require("./Calendar");
 
 module.exports = Backbone.Marionette.Layout.extend({
 
@@ -27,8 +27,8 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
   initialize: function(){
-    this.chronos = new Chronos();
-    this.chronos.fetch();
+    desk.app.chronos = new Chronos();
+    desk.app.chronos.fetch();
 
     desk.app.chronoLogs = new ChronoLogs();
     desk.app.chronoLogs.fetch();
@@ -40,9 +40,8 @@ module.exports = Backbone.Marionette.Layout.extend({
       model: new Chrono()
     });
 
-    var self = this;
     chronoView.on("saved", function(){
-      self.chronos.add(chronoView.model);
+      desk.app.chronos.add(chronoView.model);
       chronoView.model = new Chrono();
       chronoView.render();
     });
@@ -50,10 +49,10 @@ module.exports = Backbone.Marionette.Layout.extend({
     this.createChrono.show(chronoView);
 
     this.chronosCtn.show(new ChronosView({
-      collection: this.chronos
+      collection: desk.app.chronos
     }));
 
-    this.chronoLogsCtn.show(new ChronoLogsView({
+    this.chronoLogsCtn.show(new Calendar({
       collection: desk.app.chronoLogs
     }));
   }

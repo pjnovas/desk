@@ -62,7 +62,7 @@ module.exports = function(){
   window.desk.app.start();
 
 };
-},{"./views/Footer":28,"./views/Header":29,"./views/Layout":30,"./views/ModalRegion":32}],3:[function(require,module,exports){
+},{"./views/Footer":23,"./views/Header":24,"./views/Layout":25,"./views/ModalRegion":27}],3:[function(require,module,exports){
 /*
  * Backbone Global Overrides
  *
@@ -99,6 +99,13 @@ Handlebars.registerHelper('firstUpper', function(text) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 });
 
+Handlebars.registerHelper('formatDateTime', function(date) {
+  if (date && moment(date).isValid()) {
+    return moment(date).format("HH:mm");
+  } 
+  
+  return "";
+});
 },{}],5:[function(require,module,exports){
 jQuery(function() {
   require('./Initializer')();
@@ -218,6 +225,108 @@ module.exports = Backbone.Collection.extend({
 });
 
 },{"./Pin":10}],12:[function(require,module,exports){
+/**
+ * VIEW: Calendar: Shows Today's ChronoLogs
+ * 
+ */
+ 
+var template = require('./templates/calendar.hbs.js');
+
+module.exports = Backbone.Marionette.ItemView.extend({
+
+  //--------------------------------------
+  //+ PUBLIC PROPERTIES / CONSTANTS
+  //--------------------------------------
+
+  template: template,
+
+  ui: {
+    calendar: ".calendar"
+  },
+
+  //--------------------------------------
+  //+ INHERITED / OVERRIDES
+  //--------------------------------------
+
+  initialize: function(options){
+    this.collection = options && options.collection;
+    this.collection.on("reset add remove", this.render.bind(this));
+  },
+
+  onRender: function(){
+    var self = this;
+    _.defer(function(){
+      self.initCalendar();
+    });
+  },
+
+  //--------------------------------------
+  //+ PUBLIC METHODS / GETTERS / SETTERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ EVENT HANDLERS
+  //--------------------------------------
+
+  //--------------------------------------
+  //+ PRIVATE AND PROTECTED METHODS
+  //--------------------------------------
+
+  calendarCreated: false,
+
+  initCalendar: function(){
+    var calEvents = [];
+    calEvents = this.collection.map(function(ele){
+      var cevent = ele.toJSON();
+      cevent.id = cevent._id;
+      cevent.allDay = false;
+
+      var chrono = desk.app.chronos.get(cevent.chrono);
+      cevent.title = chrono.get("title");
+      //cevent.backgroundColor = 'orange';
+      cevent.start = moment(cevent.start).toDate();
+      cevent.end = moment(cevent.end).toDate();
+
+      return cevent;
+    });
+
+    if (this.calendarCreated){
+      this.ui.calendar.fullCalendar('destroy');
+    }
+
+    var self = this;
+    function updateEvent(event){
+      var log = self.collection.get(event.id);
+      //TOD: FIX LOCALE
+      log.save({
+        start: event.start.clone().add("hours", 3).toDate(),
+        end: event.end.clone().add("hours", 3).toDate()
+      });
+    }
+
+    this.ui.calendar.fullCalendar({
+      lang: 'es-AR',
+      defaultView: 'agendaDay',
+      editable: true,
+      header: false,
+      allDaySlot: false,
+      height: 600,
+      timeFormat: 'HH:mm',
+      axisFormat: 'HH:mm',
+      scrollTime: '08:00:00',
+      columnFormat: {
+        day: 'dddd D/MM'
+      },
+      events: calEvents,
+      eventDrop: updateEvent,
+      eventResize: updateEvent
+    });
+
+    this.calendarCreated = true;
+  }
+
+});
+},{"./templates/calendar.hbs.js":18}],13:[function(require,module,exports){
 /**
  * VIEW: Chrono
  * 
@@ -347,9 +456,31 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
   chronoLogit: function(){
 
+    var start = moment(this.model.get("start")).seconds(0);
+    var end = moment(this.model.get("end")).seconds(0);
+
+    function roundMinutes(dtMoment){
+      if (dtMoment.minutes() < 15){
+        dtMoment.minutes(0);
+      }
+      else if (dtMoment.minutes() < 45){
+        dtMoment.minutes(30);
+      }
+      else { // > 45
+        dtMoment.add("hours", 1).minutes(0);
+      }
+    }
+
+    roundMinutes(start);
+    roundMinutes(end);
+
+    if(start.diff(end, "minutes") < 30){
+      end = start.clone().add("minutes", 30);
+    }
+
     desk.app.chronoLogs.create({
-      start: this.model.get("start"),
-      end: this.model.get("end"),
+      start: start.format(),
+      end: end.format(),
       chrono: this.model.get("_id")
     });
 
@@ -450,7 +581,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   }
 
 });
-},{"./templates/chrono.hbs.js":21}],13:[function(require,module,exports){
+},{"./templates/chrono.hbs.js":19}],14:[function(require,module,exports){
 /**
  * VIEW: Edit Chrono
  * 
@@ -521,7 +652,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/chronoEdit.hbs.js":22}],14:[function(require,module,exports){
+},{"./templates/chronoEdit.hbs.js":20}],15:[function(require,module,exports){
 
 var 
     template = require("./templates/chronoLayout.hbs.js")
@@ -584,236 +715,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./Chrono":12,"./ChronoEdit":13,"./templates/chronoLayout.hbs.js":23}],15:[function(require,module,exports){
-/**
- * VIEW: Chrono
- * 
- */
- 
-var template = require('./templates/chronoLog.hbs.js');
-
-module.exports = Backbone.Marionette.ItemView.extend({
-
-  //--------------------------------------
-  //+ PUBLIC PROPERTIES / CONSTANTS
-  //--------------------------------------
-
-  template: template,
-
-  ui:{
-    edit: ".edit",
-    remove: ".remove",
-  },
-
-  events: {
-    "click .edit": "chronoEdit",
-    "click .remove": "chronoRemove",
-  },
-
-  //--------------------------------------
-  //+ INHERITED / OVERRIDES
-  //--------------------------------------
-
-  onRender: function(){
-
-  },
-
-  //--------------------------------------
-  //+ PUBLIC METHODS / GETTERS / SETTERS
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ EVENT HANDLERS
-  //--------------------------------------
-
-  chronoEdit: function(e){
-    this.trigger('edit');
-    e.stopPropagation();
-  },
-
-  chronoRemove: function(e){
-    if (window.confirm("Is going to be deleted, sure?")){
-      this.model.destroy();
-    }
-
-    e.stopPropagation();
-  },
-
-  //--------------------------------------
-  //+ PRIVATE AND PROTECTED METHODS
-  //--------------------------------------
-
-});
-},{"./templates/chronoLog.hbs.js":24}],16:[function(require,module,exports){
-/**
- * VIEW: Edit ChronoLog
- * 
- */
- 
-var template = require('./templates/chronoLogEdit.hbs.js');
-
-module.exports = Backbone.Marionette.ItemView.extend({
-
-  //--------------------------------------
-  //+ PUBLIC PROPERTIES / CONSTANTS
-  //--------------------------------------
-
-  className: "chrono",
-  template: template,
-
-  ui: {
-    "title": "#txt-title"
-  },
-
-  events:{
-    "click .save-chrono": "saveChrono",
-    "click .cancel-chrono": "cancelChrono"
-  },
-
-  templateHelpers: {
-    isNew: function(){
-      return this._id ? false : true;
-    }
-  },
-
-  //--------------------------------------
-  //+ INHERITED / OVERRIDES
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ PUBLIC METHODS / GETTERS / SETTERS
-  //--------------------------------------
-
-  onRender: function(){
-    
-  },
-
-  //--------------------------------------
-  //+ EVENT HANDLERS
-  //--------------------------------------
-
-  saveChrono: function(){
-    var toSave = {
-      title: this.ui.title.val()
-    };
-
-    this.model
-      .save(toSave, { patch: true, silent: true })
-      .success(this.chronoSaved.bind(this));
-  },
-
-  chronoSaved: function(){
-    this.trigger("saved");
-  },
-
-  cancelChrono: function(){
-    this.trigger("cancel");
-  }
-
-  //--------------------------------------
-  //+ PRIVATE AND PROTECTED METHODS
-  //--------------------------------------
-
-});
-},{"./templates/chronoLogEdit.hbs.js":25}],17:[function(require,module,exports){
-
-var 
-    template = require("./templates/chronoLogLayout.hbs.js")
-  , ChronoLogEditView = require("./ChronoLogEdit")
-  , ChronoLogView = require("./ChronoLog");
-
-module.exports = Backbone.Marionette.Layout.extend({
-
-  //--------------------------------------
-  //+ PUBLIC PROPERTIES / CONSTANTS
-  //--------------------------------------
-
-  tagName: "li",
-  template: template,
-
-  regions:{
-    "container": ".chrono-log-content"
-  },
-
-  //--------------------------------------
-  //+ INHERITED / OVERRIDES
-  //--------------------------------------
-
-  onRender: function(){
-    var self = this;
-
-    function showChronoLogView(){
-      var chronoLog = new ChronoLogView({
-        model: self.model
-      });
-      
-      chronoLog.on('edit', showChronoLogEditView);
-      self.container.show(chronoLog);
-    }
-
-    function showChronoLogEditView(){
-      var chronoLogEdit = new ChronoLogEditView({
-        model: self.model
-      });
-
-      chronoLogEdit.on('saved', showChronoLogView);
-      chronoLogEdit.on('cancel', showChronoLogView);
-
-      self.container.show(chronoLogEdit);
-    }
-
-    showChronoLogView();
-  }
-
-  //--------------------------------------
-  //+ PUBLIC METHODS / GETTERS / SETTERS
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ EVENT HANDLERS
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ PRIVATE AND PROTECTED METHODS
-  //--------------------------------------
-
-});
-},{"./ChronoLog":15,"./ChronoLogEdit":16,"./templates/chronoLogLayout.hbs.js":26}],18:[function(require,module,exports){
-/**
- * VIEW: Chronos
- * 
- */
-
-var ChronoLogLayout = require('./ChronoLogLayout');
-
-module.exports = Backbone.Marionette.CollectionView.extend({
-
-  //--------------------------------------
-  //+ PUBLIC PROPERTIES / CONSTANTS
-  //--------------------------------------
-
-  className: "chronos",
-  tagName: "ul",
-  itemView: ChronoLogLayout,
-
-  //--------------------------------------
-  //+ INHERITED / OVERRIDES
-  //--------------------------------------
-  
-  //--------------------------------------
-  //+ PUBLIC METHODS / GETTERS / SETTERS
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ EVENT HANDLERS
-  //--------------------------------------
-
-  //--------------------------------------
-  //+ PRIVATE AND PROTECTED METHODS
-  //--------------------------------------
-
-});
-},{"./ChronoLogLayout":17}],19:[function(require,module,exports){
+},{"./Chrono":13,"./ChronoEdit":14,"./templates/chronoLayout.hbs.js":21}],16:[function(require,module,exports){
 /**
  * VIEW: Chronos
  * 
@@ -848,7 +750,7 @@ module.exports = Backbone.Marionette.CollectionView.extend({
   //--------------------------------------
 
 });
-},{"./ChronoLayout":14}],20:[function(require,module,exports){
+},{"./ChronoLayout":15}],17:[function(require,module,exports){
 
 var 
     template = require("./templates/layout.hbs.js")
@@ -857,7 +759,7 @@ var
   , ChronoLogs = require("../../models/ChronoLogs")
   , ChronoView = require("./ChronoEdit")
   , ChronosView = require("./Chronos")
-  , ChronoLogsView = require("./ChronoLogs");
+  , Calendar = require("./Calendar");
 
 module.exports = Backbone.Marionette.Layout.extend({
 
@@ -878,8 +780,8 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
   initialize: function(){
-    this.chronos = new Chronos();
-    this.chronos.fetch();
+    desk.app.chronos = new Chronos();
+    desk.app.chronos.fetch();
 
     desk.app.chronoLogs = new ChronoLogs();
     desk.app.chronoLogs.fetch();
@@ -891,9 +793,8 @@ module.exports = Backbone.Marionette.Layout.extend({
       model: new Chrono()
     });
 
-    var self = this;
     chronoView.on("saved", function(){
-      self.chronos.add(chronoView.model);
+      desk.app.chronos.add(chronoView.model);
       chronoView.model = new Chrono();
       chronoView.render();
     });
@@ -901,10 +802,10 @@ module.exports = Backbone.Marionette.Layout.extend({
     this.createChrono.show(chronoView);
 
     this.chronosCtn.show(new ChronosView({
-      collection: this.chronos
+      collection: desk.app.chronos
     }));
 
-    this.chronoLogsCtn.show(new ChronoLogsView({
+    this.chronoLogsCtn.show(new Calendar({
       collection: desk.app.chronoLogs
     }));
   }
@@ -922,7 +823,18 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"../../models/Chrono":6,"../../models/ChronoLogs":8,"../../models/Chronos":9,"./ChronoEdit":13,"./ChronoLogs":18,"./Chronos":19,"./templates/layout.hbs.js":27}],21:[function(require,module,exports){
+},{"../../models/Chrono":6,"../../models/ChronoLogs":8,"../../models/Chronos":9,"./Calendar":12,"./ChronoEdit":14,"./Chronos":16,"./templates/layout.hbs.js":22}],18:[function(require,module,exports){
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<div class=\"calendar\"></div>";
+  })
+;
+
+},{}],19:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -938,7 +850,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -956,7 +868,7 @@ function program3(depth0,data) {
   return "\n  <div class=\"col-md-2 col-sm-2\">\n    <a class=\"acn-btn btn success save-chrono\">\n      <i class=\"fa fa-check\"></i>\n    </a>\n    <a class=\"acn-btn btn danger cancel-chrono\">\n      <i class=\"fa fa-times\"></i>\n    </a>\n  </div>\n  ";
   }
 
-  buffer += "\n<div class=\"row\">\n  <div class=\"col-xs-10\" style=\"margin-bottom: 5px;\">\n    <input id=\"txt-title\" type=\"text\" class=\"form-control\" placeholder=\"type a title\" value=\"";
+  buffer += "\n<div class=\"row\">\n  <div class=\"col-xs-10\" style=\"margin-bottom: 5px;\">\n    <input id=\"txt-title\" type=\"text\" class=\"form-control\" placeholder=\"name of what your are tracking\" value=\"";
   if (stack1 = helpers.title) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.title; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
@@ -968,7 +880,7 @@ function program3(depth0,data) {
   })
 ;
 
-},{}],23:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -979,63 +891,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],24:[function(require,module,exports){
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression;
-
-
-  if (stack1 = helpers.start) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
-  else { stack1 = depth0.start; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
-  buffer += escapeExpression(stack1)
-    + " - ";
-  if (stack1 = helpers.end) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
-  else { stack1 = depth0.end; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
-  buffer += escapeExpression(stack1)
-    + "\n<div class=\"chrono-controls\">\n  <a class=\"edit\"><i class=\"fa fa-edit\"></i></a>\n  <a class=\"remove\"><i class=\"fa fa-trash-o\"></i></a>\n</div>";
-  return buffer;
-  })
-;
-
-},{}],25:[function(require,module,exports){
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, self=this;
-
-function program1(depth0,data) {
-  
-  
-  return "\n  <div class=\"col-md-2 col-sm-2\">\n    <a class=\"acn-btn btn success save-chrono\">\n      <i class=\"fa fa-plus\"></i>\n    </a>\n  </div>\n  ";
-  }
-
-function program3(depth0,data) {
-  
-  
-  return "\n  <div class=\"col-md-2 col-sm-2\">\n    <a class=\"acn-btn btn success save-chrono\">\n      <i class=\"fa fa-check\"></i>\n    </a>\n    <a class=\"acn-btn btn danger cancel-chrono\">\n      <i class=\"fa fa-times\"></i>\n    </a>\n  </div>\n  ";
-  }
-
-  buffer += "\n<div class=\"row\">\n  <div class=\"col-xs-10\" style=\"margin-bottom: 5px;\">\n    <input id=\"txt-title\" type=\"text\" class=\"form-control\" placeholder=\"type a title\" value=\"\">\n  </div>\n\n  ";
-  stack1 = helpers['if'].call(depth0, depth0.isNew, {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n</div>";
-  return buffer;
-  })
-;
-
-},{}],26:[function(require,module,exports){
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  
-
-
-  return "<div class=\"chrono-log-content\"></div>";
-  })
-;
-
-},{}],27:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1046,7 +902,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],28:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 
 var 
     template = require("./templates/footer.hbs.js");
@@ -1076,7 +932,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./templates/footer.hbs.js":44}],29:[function(require,module,exports){
+},{"./templates/footer.hbs.js":39}],24:[function(require,module,exports){
 
 var 
     template = require("./templates/header.hbs.js"),
@@ -1121,7 +977,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./Login":31,"./templates/header.hbs.js":45}],30:[function(require,module,exports){
+},{"./Login":26,"./templates/header.hbs.js":40}],25:[function(require,module,exports){
 
 var 
     template = require("./templates/layout.hbs.js")
@@ -1169,7 +1025,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./Chronos/Layout":20,"./Pins/Layout":33,"./templates/layout.hbs.js":46}],31:[function(require,module,exports){
+},{"./Chronos/Layout":17,"./Pins/Layout":28,"./templates/layout.hbs.js":41}],26:[function(require,module,exports){
 /**
  * VIEW: Login Modal
  * 
@@ -1206,7 +1062,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/login.hbs.js":47}],32:[function(require,module,exports){
+},{"./templates/login.hbs.js":42}],27:[function(require,module,exports){
 /**
  * REGION: ModalRegion
  * Used to manage Twitter Bootstrap Modals with Backbone Marionette Views
@@ -1237,7 +1093,7 @@ module.exports = Backbone.Marionette.Region.extend({
   
 });
 
-},{}],33:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 
 var 
     template = require("./templates/layout.hbs.js")
@@ -1307,7 +1163,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"../../models/Pin":10,"../../models/Pins":11,"./PinEdit":35,"./Pins":37,"./SearchPins":38,"./templates/layout.hbs.js":39}],34:[function(require,module,exports){
+},{"../../models/Pin":10,"../../models/Pins":11,"./PinEdit":30,"./Pins":32,"./SearchPins":33,"./templates/layout.hbs.js":34}],29:[function(require,module,exports){
 /**
  * VIEW: Pin
  * 
@@ -1382,7 +1238,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/pin.hbs.js":40}],35:[function(require,module,exports){
+},{"./templates/pin.hbs.js":35}],30:[function(require,module,exports){
 /**
  * VIEW: Edit Pin
  * 
@@ -1457,7 +1313,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/pinEdit.hbs.js":41}],36:[function(require,module,exports){
+},{"./templates/pinEdit.hbs.js":36}],31:[function(require,module,exports){
 
 var 
     template = require("./templates/pinLayout.hbs.js")
@@ -1520,7 +1376,7 @@ module.exports = Backbone.Marionette.Layout.extend({
   //--------------------------------------
 
 });
-},{"./Pin":34,"./PinEdit":35,"./templates/pinLayout.hbs.js":42}],37:[function(require,module,exports){
+},{"./Pin":29,"./PinEdit":30,"./templates/pinLayout.hbs.js":37}],32:[function(require,module,exports){
 /**
  * VIEW: Pins
  * 
@@ -1555,7 +1411,7 @@ module.exports = Backbone.Marionette.CollectionView.extend({
   //--------------------------------------
 
 });
-},{"./PinLayout":36}],38:[function(require,module,exports){
+},{"./PinLayout":31}],33:[function(require,module,exports){
 /**
  * VIEW: Search Pins
  * 
@@ -1622,7 +1478,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
   //--------------------------------------
 
 });
-},{"./templates/searchPins.hbs.js":43}],39:[function(require,module,exports){
+},{"./templates/searchPins.hbs.js":38}],34:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1633,7 +1489,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],40:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1666,7 +1522,7 @@ function program1(depth0,data) {
   })
 ;
 
-},{}],41:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1704,7 +1560,7 @@ function program3(depth0,data) {
   })
 ;
 
-},{}],42:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1715,7 +1571,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],43:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1726,7 +1582,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],44:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1737,7 +1593,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],45:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1775,7 +1631,7 @@ function program3(depth0,data) {
   })
 ;
 
-},{}],46:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -1786,7 +1642,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   })
 ;
 
-},{}],47:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
