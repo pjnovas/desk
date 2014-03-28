@@ -29,6 +29,19 @@ module.exports = function(uri, userAuthA, userAuthB){
 
     });
 
+    it('GET: should retrieve all Today Logs for the logged in user', function(done){
+      
+      request.get(uri, _.clone(userAuthA), function (error, response, body) {
+        expect(error).to.not.be.ok();
+        expect(response.statusCode).to.be.equal(200);
+        
+        expect(response.body).to.be.an('array');
+        expect(response.body.length).to.be.equal(3);
+
+        done();
+      });
+    });
+
     it('GET: should retrieve all Today Logs for a Chrono', function(done){
       
       request.get(uri + '?cid=' + chronoa._id, _.clone(userAuthA), function (error, response, body) {

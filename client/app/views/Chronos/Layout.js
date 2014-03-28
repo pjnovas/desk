@@ -3,8 +3,10 @@ var
     template = require("./templates/layout.hbs.js")
   , Chrono = require("../../models/Chrono")
   , Chronos = require("../../models/Chronos")
+  , ChronoLogs = require("../../models/ChronoLogs")
   , ChronoView = require("./ChronoEdit")
-  , ChronosView = require("./Chronos");
+  , ChronosView = require("./Chronos")
+  , ChronoLogsView = require("./ChronoLogs");
 
 module.exports = Backbone.Marionette.Layout.extend({
 
@@ -16,7 +18,8 @@ module.exports = Backbone.Marionette.Layout.extend({
 
   regions:{
     "createChrono": ".new-chrono",
-    "chronosCtn": "#chronos"
+    "chronosCtn": "#chronos",
+    "chronoLogsCtn": "#chrono-logs"
   },
 
   //--------------------------------------
@@ -26,6 +29,9 @@ module.exports = Backbone.Marionette.Layout.extend({
   initialize: function(){
     this.chronos = new Chronos();
     this.chronos.fetch();
+
+    desk.app.chronoLogs = new ChronoLogs();
+    desk.app.chronoLogs.fetch();
   },
 
   onRender: function(){
@@ -45,6 +51,10 @@ module.exports = Backbone.Marionette.Layout.extend({
 
     this.chronosCtn.show(new ChronosView({
       collection: this.chronos
+    }));
+
+    this.chronoLogsCtn.show(new ChronoLogsView({
+      collection: desk.app.chronoLogs
     }));
   }
 

@@ -79,26 +79,59 @@ module.exports = Backbone.Marionette.ItemView.extend({
   chronoStart: function(){
     this.ui.timer.TimeCircles().start();
 
-    this.toggleButtons(["play", "logit", "reset", "edit", "remove"], false);
-    this.toggleButtons(["stop"], true);
+    if (!this.model.get("start")){
+      this.model.save({
+        start: moment().format(),
+        end: null
+      }, {
+        patch: true
+      });
+    }
+    else {
+      this.model.save({
+        end: null,
+      }, {
+        patch: true
+      });
+    }
+
+    this.showButtonsStarted();
   },
 
   chronoStop: function(){
     this.ui.timer.TimeCircles().stop();
+    
+    this.model.save({
+      end: moment().format(),
+    }, {
+      patch: true
+    });
 
-    this.toggleButtons(["play", "logit", "reset"], true);
-    this.toggleButtons(["stop"], false);
+    this.showButtonsStopped();
   },
 
   chronoReset: function(){
+    this.ui.timer.attr('data-timer', 0);
     this.ui.timer.TimeCircles().restart().stop();
+    
+    this.model.save({
+      start: null,
+      end: null,
+    }, {
+      patch: true
+    });
 
     this.toggleButtons(["play", "edit", "remove"], true);
     this.toggleButtons(["reset", "logit", "stop"], false);
   },
 
   chronoLogit: function(){
-    //TODO: Send a log
+
+    desk.app.chronoLogs.create({
+      start: this.model.get("start"),
+      end: this.model.get("end"),
+      chrono: this.model.get("_id")
+    });
 
     this.chronoReset();
   },
@@ -114,6 +147,16 @@ module.exports = Backbone.Marionette.ItemView.extend({
     }
 
     e.stopPropagation();
+  },
+
+  showButtonsStarted: function(){
+    this.toggleButtons(["play", "logit", "reset", "edit", "remove"], false);
+    this.toggleButtons(["stop"], true);
+  },
+
+  showButtonsStopped: function(){
+    this.toggleButtons(["play", "logit", "reset"], true);
+    this.toggleButtons(["stop"], false);
   },
 
   //--------------------------------------
@@ -132,6 +175,27 @@ module.exports = Backbone.Marionette.ItemView.extend({
   },
 
   initTimeCircles: function(){
+    var running = false;
+
+    var start = this.model.get("start") ? moment(this.model.get("start")) : null;
+    var end = this.model.get("end") ? moment(this.model.get("end")) : null;
+
+    if (start && start.isValid()){
+      var secs = 0;
+
+      if (end && end.isValid()){
+        secs = start.diff(end, "seconds");
+        this.showButtonsStopped();
+      }
+      else {
+        secs = start.diff(moment(), "seconds");
+        running = true;
+        this.ui.view.removeClass("hide");
+        this.showButtonsStarted();
+      }
+
+      this.ui.timer.attr('data-timer', secs);
+    }
 
     this.ui.timer.TimeCircles({
       start: true,
@@ -158,6 +222,11 @@ module.exports = Backbone.Marionette.ItemView.extend({
         }
       }
     }).stop();
+
+    if (running){
+      this.ui.timer.TimeCircles().start();
+    }
+
   }
 
 });

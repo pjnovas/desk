@@ -3,7 +3,8 @@
 var expect = require('expect.js')
   , _ = require('underscore')
   , request = require('request')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , moment = require('moment');
 
 request = request.defaults({ json: true });
 
@@ -76,11 +77,18 @@ module.exports = function(uri, userAuthA, userAuthB){
       it('PUT: should update a Chrono by Id', function(done){
         var uriId = uri + "/" + chronoa._id;
 
+        var start =  moment(4, "HH").format();
+        var end =  moment(7, "HH").format();
+
         request({
           uri: uriId, 
           auth: _.clone(userAuthA.auth),
           method: "PUT",
-          body: { title: "some cool update" }
+          body: { 
+            title: "some cool update",
+            start: start,
+            end: end
+          }
         }, function (error, response, body) {
           expect(error).to.not.be.ok();
           expect(response.statusCode).to.be.equal(200);
@@ -88,6 +96,8 @@ module.exports = function(uri, userAuthA, userAuthB){
           expect(response.body).to.be.an('object');
           expect(response.body._id).to.be.equal(chronoa._id.toString());
           expect(response.body.title).to.be.equal('some cool update');
+          expect(moment(response.body.start).format()).to.be.equal(start);
+          expect(moment(response.body.end).format()).to.be.equal(end);
 
           done();
         });

@@ -11,5 +11,7 @@ module.exports = function(){
   
   window.desk.apiURL = "/api";
 
+  moment.lang("es-AR");
+
   require('./app')();
 };

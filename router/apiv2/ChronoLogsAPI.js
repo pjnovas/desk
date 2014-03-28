@@ -15,14 +15,13 @@ ChronoLogsAPI.prototype.setQuery = function(req, res, next){
   var cid = req.query.cid || "";
   var start = moment(0, "HH");
 
-  if (!cid){
-    return res.send(400, "Must provide a ChronoId");
-  }
-
   req.query = {
-    owner: req.user.id,
-    chrono: cid
+    owner: req.user.id
   };
+
+  if (cid){
+    req.query.chrono = cid;      
+  }
 
   req.query.start = { $gte: start };
 
