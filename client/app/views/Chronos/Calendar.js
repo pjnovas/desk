@@ -77,6 +77,14 @@ module.exports = Backbone.Marionette.ItemView.extend({
       });
     }
 
+    function removeEvent(event){
+      if (window.confirm("remove this event?")){
+        var log = self.collection.get(event.id);
+        log.destroy();
+        self.ui.calendar.fullCalendar('removeEvents', event._id);
+      }
+    }
+
     this.ui.calendar.fullCalendar({
       lang: 'es-AR',
       defaultView: 'agendaDay',
@@ -92,7 +100,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
       },
       events: calEvents,
       eventDrop: updateEvent,
-      eventResize: updateEvent
+      eventResize: updateEvent,
+      eventClick: removeEvent
     });
 
     this.calendarCreated = true;
