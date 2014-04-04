@@ -22,10 +22,13 @@ app.use(express.json());
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 
+//for test
+//process.env.TZ = 'Europe/Amsterdam';
+
 switch(app.get('env')){
   case "development":
     app.set('config', require('./app.config.dev')); 
-    app.use(express.errorHandler());
+    //app.use(express.errorHandler());
     break;
   case "test":
     app.set('config', require('./app.config.test')); 
@@ -63,6 +66,12 @@ app.use(app.router);
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(error);
+
+function error(err, req, res, next) {
+  console.error(err.stack);
+  res.send(500);
+}
 
 require('./models')();
 require('./auth')(app);

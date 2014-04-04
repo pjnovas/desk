@@ -7,8 +7,8 @@ module.exports = function() {
   
   var Chrono = new Schema({
       "title": { type: String, required: true }
-    , "start": { type: Date }
-    , "end": { type: Date }
+    , "start": { type: Number }
+    , "end": { type: Number }
     , "owner": { type: ObjectId, required: true, ref: 'User' }
     , "created_at": { type: Date, default: Date.now }
   });

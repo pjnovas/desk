@@ -16,8 +16,8 @@ Handlebars.registerHelper('firstUpper', function(text) {
 });
 
 Handlebars.registerHelper('formatDateTime', function(date) {
-  if (date && moment(date).isValid()) {
-    return moment(date).format("HH:mm");
+  if (date && moment.unix(date).isValid()) {
+    return moment.unix(date).format("HH:mm");
   } 
   
   return "";

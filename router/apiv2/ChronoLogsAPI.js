@@ -13,7 +13,7 @@ util.inherits(ChronoLogsAPI, ResourceAPI);
 
 ChronoLogsAPI.prototype.setQuery = function(req, res, next){
   var cid = req.query.cid || "";
-  var start = moment(0, "HH");
+  var start = moment(0, "HH").unix();
 
   req.query = {
     owner: req.user.id

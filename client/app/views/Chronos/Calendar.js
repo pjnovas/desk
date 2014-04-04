@@ -49,6 +49,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
   initCalendar: function(){
     var calEvents = [];
+
     calEvents = this.collection.map(function(ele){
       var cevent = ele.toJSON();
       cevent.id = cevent._id;
@@ -57,8 +58,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
       var chrono = desk.app.chronos.get(cevent.chrono);
       cevent.title = chrono.get("title");
       //cevent.backgroundColor = 'orange';
-      cevent.start = moment(cevent.start).toDate();
-      cevent.end = moment(cevent.end).toDate();
+      cevent.start = moment.unix(cevent.start).format("YYYY-MM-DDTHH:mm:ss");
+      cevent.end = moment.unix(cevent.end).format("YYYY-MM-DDTHH:mm:ss");
 
       return cevent;
     });
@@ -70,10 +71,9 @@ module.exports = Backbone.Marionette.ItemView.extend({
     var self = this;
     function updateEvent(event){
       var log = self.collection.get(event.id);
-      //TOD: FIX LOCALE
       log.save({
-        start: event.start.clone().add("hours", 3).toDate(),
-        end: event.end.clone().add("hours", 3).toDate()
+        start: moment(event.start.format()).unix(),
+        end: moment(event.end.format()).unix()
       });
     }
 

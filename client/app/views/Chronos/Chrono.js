@@ -81,7 +81,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
     if (!this.model.get("start")){
       this.model.save({
-        start: moment().format(),
+        start: moment().unix(),
         end: null
       }, {
         patch: true
@@ -102,7 +102,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
     this.ui.timer.TimeCircles().stop();
     
     this.model.save({
-      end: moment().format(),
+      end: moment().unix(),
     }, {
       patch: true
     });
@@ -127,8 +127,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
   chronoLogit: function(){
 
-    var start = moment(this.model.get("start")).seconds(0);
-    var end = moment(this.model.get("end")).seconds(0);
+    var start = moment.unix(this.model.get("start")).seconds(0);
+    var end = moment.unix(this.model.get("end")).seconds(0);
 
     function roundMinutes(dtMoment){
       if (dtMoment.minutes() < 15){
@@ -150,8 +150,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
     }
 
     desk.app.chronoLogs.create({
-      start: start.format(),
-      end: end.format(),
+      start: start.unix(),
+      end: end.unix(),
       chrono: this.model.get("_id")
     });
 
@@ -199,8 +199,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
   initTimeCircles: function(){
     var running = false;
 
-    var start = this.model.get("start") ? moment(this.model.get("start")) : null;
-    var end = this.model.get("end") ? moment(this.model.get("end")) : null;
+    var start = this.model.get("start") ? moment.unix(this.model.get("start")) : null;
+    var end = this.model.get("end") ? moment.unix(this.model.get("end")) : null;
 
     if (start && start.isValid()){
       var secs = 0;

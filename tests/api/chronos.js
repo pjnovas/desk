@@ -77,8 +77,8 @@ module.exports = function(uri, userAuthA, userAuthB){
       it('PUT: should update a Chrono by Id', function(done){
         var uriId = uri + "/" + chronoa._id;
 
-        var start =  moment(4, "HH").format();
-        var end =  moment(7, "HH").format();
+        var start =  moment(4, "HH").unix();
+        var end =  moment(7, "HH").unix();
 
         request({
           uri: uriId, 
@@ -96,8 +96,8 @@ module.exports = function(uri, userAuthA, userAuthB){
           expect(response.body).to.be.an('object');
           expect(response.body._id).to.be.equal(chronoa._id.toString());
           expect(response.body.title).to.be.equal('some cool update');
-          expect(moment(response.body.start).format()).to.be.equal(start);
-          expect(moment(response.body.end).format()).to.be.equal(end);
+          expect(response.body.start).to.be.equal(start);
+          expect(response.body.end).to.be.equal(end);
 
           done();
         });

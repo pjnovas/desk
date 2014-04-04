@@ -6,8 +6,8 @@ var mongoose = require('mongoose')
 module.exports = function() {
 
   var ChronoLog = new Schema({
-      "start": { type: Date, required: true }
-    , "end": { type: Date }
+      "start": { type: Number, required: true }
+    , "end": { type: Number }
     , "chrono": { type: ObjectId, required: true, ref: 'Chrono' }
     , "owner": { type: ObjectId, required: true, ref: 'User' }
   });

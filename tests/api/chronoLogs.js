@@ -57,8 +57,8 @@ module.exports = function(uri, userAuthA, userAuthB){
 
     it('POST: should create a Log for a Chrono', function(done){
       
-      var start =  moment(4, "HH").format();
-      var end =  moment(7, "HH").format();
+      var start =  moment(4, "HH").unix();
+      var end =  moment(7, "HH").unix();
 
       request({
         uri: uri, 
@@ -78,8 +78,8 @@ module.exports = function(uri, userAuthA, userAuthB){
         expect(response.body._id).to.be.ok();
         expect(response.body.chrono).to.be.equal(chronoa._id.toString());
 
-        expect(moment(response.body.start).format()).to.be.equal(start);
-        expect(moment(response.body.end).format()).to.be.equal(end);
+        expect(response.body.start).to.be.equal(start);
+        expect(response.body.end).to.be.equal(end);
 
         expect(response.body.owner).to.be.eql(userAuthA._id.toString());
 
@@ -106,7 +106,7 @@ module.exports = function(uri, userAuthA, userAuthB){
       it('PUT: should update a Chrono Log by Id', function(done){
         var uriId = uri + "/" + chronoLoga._id;
 
-        var end = moment(15, "HH").format();
+        var end = moment(15, "HH").unix();
 
         request({
           uri: uriId, 
@@ -119,7 +119,7 @@ module.exports = function(uri, userAuthA, userAuthB){
           
           expect(response.body).to.be.an('object');
           expect(response.body._id).to.be.equal(chronoLoga._id.toString());
-          expect(moment(response.body.end).format()).to.be.equal(end);
+          expect(response.body.end).to.be.equal(end);
 
           done();
         });
@@ -164,7 +164,7 @@ function createChronoLogs(usera, done){
 
   function getDateTime(hours, days){
     days = days || 0;
-    return moment(hours, "HH").add('days', days).format();
+    return moment(hours, "HH").add('days', days).unix();
   }
 
   //Today

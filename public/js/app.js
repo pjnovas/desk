@@ -100,8 +100,8 @@ Handlebars.registerHelper('firstUpper', function(text) {
 });
 
 Handlebars.registerHelper('formatDateTime', function(date) {
-  if (date && moment(date).isValid()) {
-    return moment(date).format("HH:mm");
+  if (date && moment.unix(date).isValid()) {
+    return moment.unix(date).format("HH:mm");
   } 
   
   return "";
@@ -276,6 +276,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
   initCalendar: function(){
     var calEvents = [];
+
     calEvents = this.collection.map(function(ele){
       var cevent = ele.toJSON();
       cevent.id = cevent._id;
@@ -284,8 +285,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
       var chrono = desk.app.chronos.get(cevent.chrono);
       cevent.title = chrono.get("title");
       //cevent.backgroundColor = 'orange';
-      cevent.start = moment(cevent.start).toDate();
-      cevent.end = moment(cevent.end).toDate();
+      cevent.start = moment.unix(cevent.start).format("YYYY-MM-DDTHH:mm:ss");
+      cevent.end = moment.unix(cevent.end).format("YYYY-MM-DDTHH:mm:ss");
 
       return cevent;
     });
@@ -297,10 +298,9 @@ module.exports = Backbone.Marionette.ItemView.extend({
     var self = this;
     function updateEvent(event){
       var log = self.collection.get(event.id);
-      //TOD: FIX LOCALE
       log.save({
-        start: event.start.clone().add("hours", 3).toDate(),
-        end: event.end.clone().add("hours", 3).toDate()
+        start: moment(event.start.format()).unix(),
+        end: moment(event.end.format()).unix()
       });
     }
 
@@ -410,7 +410,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
     if (!this.model.get("start")){
       this.model.save({
-        start: moment().format(),
+        start: moment().unix(),
         end: null
       }, {
         patch: true
@@ -431,7 +431,7 @@ module.exports = Backbone.Marionette.ItemView.extend({
     this.ui.timer.TimeCircles().stop();
     
     this.model.save({
-      end: moment().format(),
+      end: moment().unix(),
     }, {
       patch: true
     });
@@ -456,8 +456,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
 
   chronoLogit: function(){
 
-    var start = moment(this.model.get("start")).seconds(0);
-    var end = moment(this.model.get("end")).seconds(0);
+    var start = moment.unix(this.model.get("start")).seconds(0);
+    var end = moment.unix(this.model.get("end")).seconds(0);
 
     function roundMinutes(dtMoment){
       if (dtMoment.minutes() < 15){
@@ -479,8 +479,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
     }
 
     desk.app.chronoLogs.create({
-      start: start.format(),
-      end: end.format(),
+      start: start.unix(),
+      end: end.unix(),
       chrono: this.model.get("_id")
     });
 
@@ -528,8 +528,8 @@ module.exports = Backbone.Marionette.ItemView.extend({
   initTimeCircles: function(){
     var running = false;
 
-    var start = this.model.get("start") ? moment(this.model.get("start")) : null;
-    var end = this.model.get("end") ? moment(this.model.get("end")) : null;
+    var start = this.model.get("start") ? moment.unix(this.model.get("start")) : null;
+    var end = this.model.get("end") ? moment.unix(this.model.get("end")) : null;
 
     if (start && start.isValid()){
       var secs = 0;

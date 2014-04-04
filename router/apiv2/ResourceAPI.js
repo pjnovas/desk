@@ -72,7 +72,7 @@ ResourceAPI.prototype.getOne = function(req, res, next){
 
   this.Model.findById(req.params.id)
     .exec(function(err, one) {
-      if (err) return res.send(500);
+      if (err) return res.send(500, err);
       if (!one) return res.send(404);
 
       req.one = one;
@@ -99,7 +99,7 @@ ResourceAPI.prototype.createOne = function(req, res, next){
   one.owner = req.user._id;
 
   one.save(function(err, one){
-    if(err) return res.send(500); 
+    if(err) return res.send(500, err); 
     req.one = one;
 
     next();
@@ -121,7 +121,7 @@ ResourceAPI.prototype.updateOne = function(req, res, next) {
   }
 
   one.save(function(err, one){
-    if(err) return res.send(500);
+    if(err) return res.send(500, err);
     req.one = one;
 
     next();
@@ -130,7 +130,7 @@ ResourceAPI.prototype.updateOne = function(req, res, next) {
 
 ResourceAPI.prototype.removeOne = function(req, res){
   req.one.remove(function (err){
-    if (err) return res.send(500, "An error ocurred when removing this resource");
+    if (err) return res.send(500, err);
     res.send(204);
   });
 };
@@ -175,7 +175,7 @@ ResourceAPI.prototype.setList = function(req, res, next){
   }
   
   find.exec(function(err, list) {
-      if(err) return res.send(500);
+      if(err) return res.send(500, err);
       req.list = list || [];
       next();
     });
